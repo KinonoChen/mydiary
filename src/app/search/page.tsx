@@ -57,6 +57,8 @@ export default function SearchPage() {
   const getDateRange = () => {
     const now = new Date()
     switch (dateRange) {
+      case 'all':
+        return { from: null, to: null }
       case 'today':
         return {
           from: new Date(now.setHours(0, 0, 0, 0)).toISOString(),
@@ -84,21 +86,23 @@ export default function SearchPage() {
           to: now.toISOString()
         }
       default:
-        return { from: null, to: null }
+        return undefined
     }
   }
 
   const handleSearch = async () => {
-    if (!searchQuery.trim() && selectedTags.length === 0 && !dateRange) {
-      setError('请输入搜索内容或选择筛选条件')
-      return
+    const dateRangeResult = getDateRange();
+    const isDateRangeSelected = dateRangeResult !== undefined;
+
+    if (!searchQuery.trim() && selectedTags.length === 0 && !isDateRangeSelected) {
+      setError('请输入搜索内容或选择筛选条件');
+      return;
     }
 
-    setIsLoading(true)
-    setError('')
+    setIsLoading(true);
+    setError('');
 
     try {
-      const { from, to } = getDateRange()
       const response = await fetch('/api/diaries/search', {
         method: 'POST',
         headers: {
@@ -107,14 +111,14 @@ export default function SearchPage() {
         body: JSON.stringify({
           query: searchQuery.trim(),
           tags: selectedTags,
-          dateFrom: from,
-          dateTo: to,
+          dateFrom: isDateRangeSelected ? dateRangeResult.from : null,
+          dateTo: isDateRangeSelected ? dateRangeResult.to : null,
           page: 1,
           limit: 10,
           sortBy: 'createdAt',
-          sortOrder: 'desc'
+          sortOrder: 'desc',
         }),
-      })
+      });
 
       if (!response.ok) {
         const data = await response.json()
@@ -136,13 +140,22 @@ export default function SearchPage() {
   // 当搜索条件改变时自动搜索
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      if (searchQuery.trim() || selectedTags.length > 0 || dateRange) {
-        handleSearch()
-      }
-    }, 500)
+      const dateRangeResult = getDateRange();
+      const isDateRangeSelected = dateRangeResult !== undefined;
 
-    return () => clearTimeout(debounceTimer)
-  }, [searchQuery, selectedTags, dateRange])
+      if (isDateRangeSelected && (searchQuery.trim() || selectedTags.length > 0)) {
+        handleSearch();
+      } else {
+        // 清空搜索结果时不显示loading状态，避免闪烁
+        setSearchResults([]);
+        setTotalResults(0);
+        setError('');
+        setIsLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, selectedTags, dateRange]);
 
   return (
     <div className="space-y-6">
@@ -213,7 +226,8 @@ export default function SearchPage() {
               onChange={(e) => setDateRange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="">全部时间</option>
+              <option value="">请选择时间</option>
+              <option value="all">全部时间</option>
               <option value="today">今天</option>
               <option value="week">最近一周</option>
               <option value="month">最近一月</option>
@@ -253,60 +267,68 @@ export default function SearchPage() {
           </p>
         </div>
         
-        <div className="p-6">
-          <div className="space-y-6">
-            {searchResults.map((result) => (
-              <div 
-                key={result.id}
-                onClick={() => router.push(`/diary/${result.id}`)}
-                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-4 rounded-lg transition-colors"
-              >
-                <h3 
-                  className="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-                  dangerouslySetInnerHTML={{ __html: result.highlightedTitle || result.title }}
-                />
-                <p 
-                  className="text-gray-600 dark:text-gray-400 mb-3"
-                  dangerouslySetInnerHTML={{ __html: result.highlightedContent || result.content }}
-                />
-                <div className="flex flex-wrap gap-2">
-                  {result.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+        {/* 为搜索结果区域设置最小高度，避免布局跳动 */}
+        <div className="p-6 min-h-[400px]">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">搜索中...</span>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {searchResults.map((result) => (
+                <div 
+                  key={result.id}
+                  onClick={() => router.push(`/diary/${result.id}`)}
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-4 rounded-lg transition-colors"
+                >
+                  <h3 
+                    className="text-lg font-semibold text-gray-900 dark:text-white mb-2"
+                    dangerouslySetInnerHTML={{ __html: result.highlightedTitle || result.title }}
+                  />
+                  <p 
+                    className="text-gray-600 dark:text-gray-400 mb-3"
+                    dangerouslySetInnerHTML={{ __html: result.highlightedContent || result.content }}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {result.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(result.createdAt).toLocaleString('zh-CN', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
                 </div>
-                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  {new Date(result.createdAt).toLocaleString('zh-CN', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </div>
-              </div>
-            ))}
+              ))}
 
-            {searchResults.length === 0 && !isLoading && (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  {searchQuery || selectedTags.length > 0 || dateRange
-                    ? '未找到相关日记'
-                    : '开始搜索你的日记'}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {searchQuery || selectedTags.length > 0 || dateRange
-                    ? '试试更换关键词或筛选条件'
-                    : '输入关键词或选择标签来查找相关的日记内容'}
-                </p>
-              </div>
-            )}
-          </div>
+              {searchResults.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">🔍</div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    {searchQuery || selectedTags.length > 0 || dateRange
+                      ? '未找到相关日记'
+                      : '开始搜索你的日记'}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {searchQuery || selectedTags.length > 0 || dateRange
+                      ? '试试更换关键词或筛选条件'
+                      : '输入关键词或选择标签来查找相关的日记内容'}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Diary {
@@ -14,7 +14,8 @@ interface Diary {
   updatedAt: string
 }
 
-export default function EditDiaryPage({ params }: { params: { id: string } }) {
+export default function EditDiaryPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
   const [diary, setDiary] = useState<Diary | null>(null)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -30,7 +31,7 @@ export default function EditDiaryPage({ params }: { params: { id: string } }) {
     const fetchDiary = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch(`/api/diaries/${params.id}`)
+        const response = await fetch(`/api/diaries/${resolvedParams.id}`)
         
         if (!response.ok) {
           throw new Error('获取日记失败')
@@ -51,7 +52,7 @@ export default function EditDiaryPage({ params }: { params: { id: string } }) {
     }
 
     fetchDiary()
-  }, [params.id])
+  }, [resolvedParams.id])
 
   const handleAddTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
@@ -73,7 +74,7 @@ export default function EditDiaryPage({ params }: { params: { id: string } }) {
     setError('')
 
     try {
-      const response = await fetch(`/api/diaries/${params.id}`, {
+      const response = await fetch(`/api/diaries/${resolvedParams.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

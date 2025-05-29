@@ -153,6 +153,13 @@ export default function SignUpPage() {
                 placeholder="再次输入密码"
               />
             </div>
+            {/* 加个固定邀请码 testForXqJh*/}
+            <div>
+              <label htmlFor="invitationCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                邀请码
+              </label>
+              <input
+            
           </div>
 
           {error && (

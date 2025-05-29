@@ -1,6 +1,9 @@
+'use client'
 import Image from "next/image";
+import { useRouter } from 'next/navigation'
 
 export default function HomePage() {
+  const router = useRouter()
   return (
     <div className="text-center py-12">
       {/* Hero Section */}
@@ -52,7 +55,9 @@ export default function HomePage() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+          <button
+            onClick={() => router.push('/diary/new')} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors cursor-pointer">
             开始写日记
           </button>
           <button className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-8 py-3 rounded-lg font-medium transition-colors">

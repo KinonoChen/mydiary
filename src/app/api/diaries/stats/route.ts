@@ -66,7 +66,13 @@ export async function GET(request: NextRequest) {
       GROUP BY strftime('%Y-%m', createdAt)
       ORDER BY month DESC
       LIMIT 12
-    ` as Array<{ month: string; count: number }>
+    ` as Array<{ month: string; count: bigint }>
+
+    // 将BigInt转换为普通数字
+    const processedMonthlyStats = monthlyStats.map(item => ({
+      month: item.month,
+      count: Number(item.count)
+    }))
 
     // 获取所有日记的标签并统计
     const diariesWithTags = await prisma.diary.findMany({
@@ -131,9 +137,44 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 计算总字数 - 获取所有日记内容来计算字数
+    const allContents = await prisma.diary.findMany({
+      where: { userId: user.id },
+      select: {
+        content: true
+      }
+    })
+
+    const totalWords = allContents.reduce((sum, diary) => sum + diary.content.length, 0)
+
+    // 计算本月字数和数量
+    const currentMonth = new Date()
+    const currentMonthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
+    const currentMonthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59, 999)
+    
+    const currentMonthDiaries = await prisma.diary.findMany({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: currentMonthStart,
+          lte: currentMonthEnd
+        }
+      },
+      select: {
+        content: true,
+        id: true
+      }
+    })
+
+    const currentMonthWords = currentMonthDiaries.reduce((sum, diary) => sum + diary.content.length, 0)
+    const currentMonthCount = currentMonthDiaries.length
+
     const stats = {
       total: totalDiaries,
       streak: streakDays,
+      totalWords: totalWords,
+      currentMonthWords: currentMonthWords,
+      currentMonthCount: currentMonthCount,
       mood: moodStats.map(item => ({
         mood: item.mood,
         count: item._count
@@ -142,10 +183,10 @@ export async function GET(request: NextRequest) {
         weather: item.weather,
         count: item._count
       })),
-      monthly: monthlyStats,
+      monthly: processedMonthlyStats,
       tags: tagsArray,
-      averagePerMonth: monthlyStats.length > 0 
-        ? Math.round(monthlyStats.reduce((sum, item) => sum + item.count, 0) / monthlyStats.length)
+      averagePerMonth: processedMonthlyStats.length > 0 
+        ? Math.round(processedMonthlyStats.reduce((sum, item) => sum + item.count, 0) / processedMonthlyStats.length)
         : 0
     }
 

@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 // GET /api/diaries/[id] - 根据ID获取单个日记
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -15,7 +15,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const diaryId = context.params.id
+    const params = await context.params
+    const diaryId = params.id
 
     // 查找用户
     const user = await prisma.user.findUnique({
@@ -71,7 +72,7 @@ export async function GET(
 // PUT /api/diaries/[id] - 更新日记
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -80,7 +81,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const diaryId = context.params.id
+    const params = await context.params
+    const diaryId = params.id
     const body = await request.json()
     const { title, content, tags = [], mood, weather } = body
 
@@ -162,7 +164,7 @@ export async function PUT(
 // DELETE /api/diaries/[id] - 删除日记
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -171,7 +173,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const diaryId = context.params.id
+    const params = await context.params
+    const diaryId = params.id
 
     // 查找用户
     const user = await prisma.user.findUnique({
@@ -202,10 +205,7 @@ export async function DELETE(
       where: { id: diaryId }
     })
 
-    return NextResponse.json(
-      { message: 'Diary deleted successfully' },
-      { status: 200 }
-    )
+    return NextResponse.json({ message: 'Diary deleted successfully' })
 
   } catch (error) {
     console.error('Error deleting diary:', error)
