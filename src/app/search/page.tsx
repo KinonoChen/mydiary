@@ -227,7 +227,7 @@ export default function SearchPage() {
           <button 
             onClick={handleSearch}
             disabled={isLoading}
-            className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? '搜索中...' : '开始搜索'}
           </button>

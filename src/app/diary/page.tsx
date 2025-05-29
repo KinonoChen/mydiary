@@ -141,7 +141,7 @@ export default function DiaryPage() {
         </div>
         <button 
           onClick={() => router.push('/diary/new')}
-          className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
         >
           写新日记
         </button>

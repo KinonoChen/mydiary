@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 const navigation = [
   { name: '仪表板', href: '/dashboard', icon: '📊' },
@@ -19,6 +20,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
   return (
     <>
@@ -58,7 +60,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   key={item.name}
                   href={item.href}
                   className={`
-                    flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                    flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer
                     ${isActive 
                       ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
@@ -74,21 +76,27 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </nav>
 
           {/* User Profile */}
-          <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                <span className="text-sm">👤</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                  用户名
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  user@example.com
-                </p>
+          {session?.user && (
+            <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center overflow-hidden">
+                  {session.user.image ? (
+                    <img src={session.user.image} alt={session.user.name ?? 'User avatar'} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-sm">👤</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {session.user.name || '用户'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {session.user.email}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>
