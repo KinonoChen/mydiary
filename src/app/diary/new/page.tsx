@@ -54,6 +54,7 @@ export default function NewDiaryPage() {
 
       // 发布成功，跳转到日记列表页
       router.push('/diary')
+      router.refresh() // 刷新页面数据
     } catch (err) {
       setError(err instanceof Error ? err.message : '发布失败，请重试')
     } finally {

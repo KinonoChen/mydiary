@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 // GET /api/diaries/[id] - 根据ID获取单个日记
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const diaryId = params.id
+    const diaryId = context.params.id
 
     // 查找用户
     const user = await prisma.user.findUnique({
@@ -71,7 +71,7 @@ export async function GET(
 // PUT /api/diaries/[id] - 更新日记
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -80,7 +80,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const diaryId = params.id
+    const diaryId = context.params.id
     const body = await request.json()
     const { title, content, tags = [], mood, weather } = body
 
@@ -116,13 +116,16 @@ export async function PUT(
       )
     }
 
+    // 确保 tags 是数组并进行序列化
+    const processedTags = Array.isArray(tags) ? tags : []
+
     // 更新日记
     const updatedDiary = await prisma.diary.update({
       where: { id: diaryId },
       data: {
         title: title.trim(),
         content: content.trim(),
-        tags: JSON.stringify(tags),
+        tags: JSON.stringify(processedTags),
         mood: mood || null,
         weather: weather || null,
         updatedAt: new Date()
@@ -139,10 +142,10 @@ export async function PUT(
       }
     })
 
-    // 处理tags字段
+    // 处理返回的 tags 字段
     const processedDiary = {
       ...updatedDiary,
-      tags: updatedDiary.tags ? JSON.parse(updatedDiary.tags) : []
+      tags: processedTags
     }
 
     return NextResponse.json(processedDiary)
@@ -159,7 +162,7 @@ export async function PUT(
 // DELETE /api/diaries/[id] - 删除日记
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -168,7 +171,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const diaryId = params.id
+    const diaryId = context.params.id
 
     // 查找用户
     const user = await prisma.user.findUnique({

@@ -94,6 +94,7 @@ export default function EditDiaryPage({ params }: { params: { id: string } }) {
 
       // 保存成功，返回日记列表页
       router.push('/diary')
+      router.refresh() // 刷新页面数据
     } catch (err) {
       setError(err instanceof Error ? err.message : '保存失败，请重试')
     } finally {

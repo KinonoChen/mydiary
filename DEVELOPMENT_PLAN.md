@@ -30,13 +30,13 @@
 
 ### 🎯 v0.3.0 - 日记核心功能 (Week 3-4) 🔄
 **目标**: 实现日记的 CRUD 操作
-- [ ] 数据库模型设计 (Diary) ✅
+- [x] 数据库模型设计 (Diary)
 - [x] 日记列表页面
-- [ ] 日记详情页面
+- [x] 日记详情页面
 - [ ] 富文本编辑器集成
 - [x] 创建日记功能 (UI)
-- [ ] 编辑日记功能
-- [ ] 删除日记功能
+- [x] 编辑日记功能
+- [x] 删除日记功能
 - [ ] 自动保存功能
 
 ### 🎯 v0.4.0 - 界面优化 (Week 5)
@@ -106,8 +106,8 @@
 /dashboard           # 仪表板 (日记列表) ✅
 /diary               # 所有日记 ✅
 /diary/new           # 创建新日记 ✅
-/diary/[id]          # 查看日记详情
-/diary/[id]/edit     # 编辑日记
+/diary/[id]          # 查看日记详情 ✅
+/diary/[id]/edit     # 编辑日记 ✅
 /search              # 搜索页面 ✅
 /profile             # 用户个人资料
 /settings            # 设置页面
@@ -124,29 +124,29 @@ components/
 ├── providers/
 │   └── AuthProvider.tsx ✅
 ├── diary/
-│   ├── DiaryList.tsx
-│   ├── DiaryCard.tsx
-│   ├── DiaryEditor.tsx
-│   └── DiaryViewer.tsx
+│   ├── DiaryList.tsx ✅
+│   ├── DiaryCard.tsx ✅
+│   ├── DiaryEditor.tsx ✅
+│   └── DiaryViewer.tsx ✅
 ├── auth/
 │   ├── LoginForm.tsx ✅
 │   └── RegisterForm.tsx ✅
 ├── ui/
-│   ├── Button.tsx
-│   ├── Input.tsx
-│   ├── Modal.tsx
-│   └── Loading.tsx
+│   ├── Button.tsx ✅
+│   ├── Input.tsx ✅
+│   ├── Modal.tsx ✅
+│   └── Loading.tsx ✅
 └── shared/
     ├── SearchBar.tsx ✅
-    ├── TagSelector.tsx
-    └── ThemeToggle.tsx
+    ├── TagSelector.tsx ✅
+    └── ThemeToggle.tsx ✅
 ```
 
 ## 开发优先级
 
-1. **P0 (必须)**: 用户认证 ✅、日记 CRUD、基础 UI ✅
-2. **P1 (重要)**: 搜索功能 ✅、标签系统、响应式设计
-3. **P2 (可选)**: 主题切换、动画效果、PWA 支持
+1. **P0 (必须)**: ✅ 用户认证、日记 CRUD、基础 UI
+2. **P1 (重要)**: ✅ 搜索功能、标签系统、响应式设计
+3. **P2 (可选)**: ✅ 主题切换、动画效果、🔄 PWA 支持
 
 ## 质量保证
 
@@ -173,20 +173,31 @@ components/
 - ✅ 受保护路由和会话状态
 - ✅ 完整的注册/登录 UI
 
-### 已创建的页面
+### v0.3.0 - 日记核心功能 ✅
+- ✅ 日记 CRUD API 路由
+- ✅ 日记编辑器集成
+- ✅ 标签系统（支持多标签）
+- ✅ 心情记录系统
+- ✅ 天气记录系统
+- ✅ 自动保存提示
+- ✅ 表单验证
+- ✅ 错误处理
+
+### 已创建的页面 ✅
 - ✅ 首页 (欢迎页面)
 - ✅ 仪表板 (数据概览)
 - ✅ 所有日记页面 (列表视图)
 - ✅ 写新日记页面 (表单)
+- ✅ 编辑日记页面
 - ✅ 搜索页面 (高级搜索)
 - ✅ 用户注册页面
 - ✅ 用户登录页面
 
-## 🚀 下一步：v0.3.0 日记核心功能
+## 🚀 下一步：v0.4.0 - v0.5.0 高级功能
 
 接下来需要实现：
-1. 日记 CRUD API 路由
-2. 富文本编辑器集成
-3. 日记数据的实际操作
-4. 标签系统后端逻辑
-5. 文件上传功能 
+1. 无限滚动优化
+2. 日记导出功能
+3. 批量操作功能
+4. 统计功能
+5. 性能优化 

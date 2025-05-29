@@ -128,12 +128,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // 确保 tags 是数组并进行序列化
+    const processedTags = Array.isArray(tags) ? tags : []
+
     // 创建日记
     const diary = await prisma.diary.create({
       data: {
         title: title.trim(),
         content: content.trim(),
-        tags: JSON.stringify(tags),
+        tags: JSON.stringify(processedTags),
         mood: mood || null,
         weather: weather || null,
         userId: user.id
@@ -150,10 +153,10 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // 处理tags字段
+    // 处理返回的 tags 字段
     const processedDiary = {
       ...diary,
-      tags: diary.tags ? JSON.parse(diary.tags) : []
+      tags: processedTags
     }
 
     return NextResponse.json(processedDiary, { status: 201 })
