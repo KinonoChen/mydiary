@@ -9,11 +9,15 @@ export default function SignUpPage() {
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    inviteCode: ''
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+
+  // 固定邀请码
+  const VALID_INVITE_CODE = 'testForXqJh'
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -26,6 +30,13 @@ export default function SignUpPage() {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+
+    // 验证邀请码
+    if (formData.inviteCode !== VALID_INVITE_CODE) {
+      setError('邀请码无效，请联系管理员获取正确的邀请码')
+      setIsLoading(false)
+      return
+    }
 
     // 验证密码
     if (formData.password !== formData.confirmPassword) {
@@ -83,10 +94,31 @@ export default function SignUpPage() {
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             开始记录你的美好时光
           </p>
+          <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+            <div className="text-sm text-blue-700 dark:text-blue-300 text-center">
+              🎯 灰度测试期间，需要邀请码才能注册
+            </div>
+          </div>
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
+            <div>
+              <label htmlFor="inviteCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                邀请码 <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="inviteCode"
+                name="inviteCode"
+                type="text"
+                required
+                value={formData.inviteCode}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="输入邀请码"
+              />
+            </div>
+
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 用户名
@@ -153,13 +185,6 @@ export default function SignUpPage() {
                 placeholder="再次输入密码"
               />
             </div>
-            {/* 加个固定邀请码 testForXqJh*/}
-            <div>
-              <label htmlFor="invitationCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                邀请码
-              </label>
-              <input
-            
           </div>
 
           {error && (

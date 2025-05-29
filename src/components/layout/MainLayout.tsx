@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Header from './Header'
 import Sidebar from './Sidebar'
 
@@ -10,6 +11,19 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const pathname = usePathname()
+  
+  // 检查是否为认证页面
+  const isAuthPage = pathname?.startsWith('/auth/')
+
+  // 如果是认证页面，返回简单布局
+  if (isAuthPage) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {children}
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

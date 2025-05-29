@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn, getSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 export default function SignInPage() {
@@ -10,12 +10,23 @@ export default function SignInPage() {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    // 检查URL参数中是否有成功消息
+    const message = searchParams.get('message')
+    if (message) {
+      setSuccessMessage(message)
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+    setSuccessMessage('')
 
     try {
       const result = await signIn('credentials', {
@@ -91,6 +102,14 @@ export default function SignInPage() {
             </div>
           </div>
 
+          {successMessage && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3">
+              <div className="text-sm text-green-600 dark:text-green-400">
+                {successMessage}
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
               <div className="text-sm text-red-600 dark:text-red-400">
@@ -109,13 +128,16 @@ export default function SignInPage() {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <span className="text-sm text-gray-600 dark:text-gray-400">
               还没有账号？{' '}
               <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
                 立即注册
               </Link>
             </span>
+            <div className="text-xs text-gray-500 dark:text-gray-500">
+              🎯 注册需要邀请码，请联系管理员获取
+            </div>
           </div>
         </form>
       </div>
