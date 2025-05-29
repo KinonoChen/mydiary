@@ -266,7 +266,7 @@ export default function DashboardPage() {
               <p className="text-gray-500 dark:text-gray-400 mb-4">还没有日记</p>
               <button 
                 onClick={() => router.push('/diary/new')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
               >
                 写第一篇日记
               </button>
@@ -295,21 +295,21 @@ export default function DashboardPage() {
           <div className="space-y-3">
             <button 
               onClick={() => router.push('/diary/new')}
-              className="w-full flex items-center justify-start px-4 py-3 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+              className="w-full flex items-center justify-start px-4 py-3 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors cursor-pointer"
             >
               <span className="mr-3 text-xl">✍️</span>
               <span className="text-blue-700 dark:text-blue-300 font-medium">写新日记</span>
             </button>
             <button 
               onClick={() => router.push('/search')}
-              className="w-full flex items-center justify-start px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              className="w-full flex items-center justify-start px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer"
             >
               <span className="mr-3 text-xl">🔍</span>
               <span className="text-gray-700 dark:text-gray-300 font-medium">搜索日记</span>
             </button>
             <button 
               onClick={() => router.push('/diary')}
-              className="w-full flex items-center justify-start px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              className="w-full flex items-center justify-start px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer"
             >
               <span className="mr-3 text-xl">🏷️</span>
               <span className="text-gray-700 dark:text-gray-300 font-medium">管理标签</span>
