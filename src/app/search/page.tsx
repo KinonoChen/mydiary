@@ -1,11 +1,50 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
+interface SearchResult {
+  id: string
+  title: string
+  content: string
+  tags: string[]
+  mood: string | null
+  weather: string | null
+  createdAt: string
+  updatedAt: string
+  highlightedTitle?: string
+  highlightedContent?: string
+}
+
+interface SearchResponse {
+  data: SearchResult[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
+  searchInfo: {
+    query: string
+    tags: string[]
+    mood: string | null
+    weather: string | null
+    dateFrom: string | null
+    dateTo: string | null
+    sortBy: string
+    sortOrder: string
+  }
+}
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [dateRange, setDateRange] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [totalResults, setTotalResults] = useState(0)
+  const router = useRouter()
 
   const handleTagToggle = (tag: string) => {
     setSelectedTags(prev => 
@@ -14,6 +53,96 @@ export default function SearchPage() {
         : [...prev, tag]
     )
   }
+
+  const getDateRange = () => {
+    const now = new Date()
+    switch (dateRange) {
+      case 'today':
+        return {
+          from: new Date(now.setHours(0, 0, 0, 0)).toISOString(),
+          to: new Date(now.setHours(23, 59, 59, 999)).toISOString()
+        }
+      case 'week':
+        const weekAgo = new Date(now)
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        return {
+          from: weekAgo.toISOString(),
+          to: now.toISOString()
+        }
+      case 'month':
+        const monthAgo = new Date(now)
+        monthAgo.setMonth(monthAgo.getMonth() - 1)
+        return {
+          from: monthAgo.toISOString(),
+          to: now.toISOString()
+        }
+      case 'year':
+        const yearAgo = new Date(now)
+        yearAgo.setFullYear(yearAgo.getFullYear() - 1)
+        return {
+          from: yearAgo.toISOString(),
+          to: now.toISOString()
+        }
+      default:
+        return { from: null, to: null }
+    }
+  }
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim() && selectedTags.length === 0 && !dateRange) {
+      setError('请输入搜索内容或选择筛选条件')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const { from, to } = getDateRange()
+      const response = await fetch('/api/diaries/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: searchQuery.trim(),
+          tags: selectedTags,
+          dateFrom: from,
+          dateTo: to,
+          page: 1,
+          limit: 10,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || '搜索失败')
+      }
+
+      const data: SearchResponse = await response.json()
+      setSearchResults(data.data)
+      setTotalResults(data.pagination.total)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '搜索失败，请重试')
+      setSearchResults([])
+      setTotalResults(0)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 当搜索条件改变时自动搜索
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (searchQuery.trim() || selectedTags.length > 0 || dateRange) {
+        handleSearch()
+      }
+    }, 500)
+
+    return () => clearTimeout(debounceTimer)
+  }, [searchQuery, selectedTags, dateRange])
 
   return (
     <div className="space-y-6">
@@ -95,10 +224,22 @@ export default function SearchPage() {
 
         {/* Search Button */}
         <div className="mt-6 flex justify-center">
-          <button className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
-            开始搜索
+          <button 
+            onClick={handleSearch}
+            disabled={isLoading}
+            className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? '搜索中...' : '开始搜索'}
           </button>
         </div>
+
+        {error && (
+          <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+            <div className="text-sm text-red-600 dark:text-red-400">
+              {error}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Search Results */}
@@ -108,54 +249,64 @@ export default function SearchPage() {
             搜索结果
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            找到 5 条相关日记
+            找到 {totalResults} 条相关日记
           </p>
         </div>
         
         <div className="p-6">
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((index) => (
-              <div key={index} className="border-l-4 border-blue-500 pl-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-r-lg transition-colors cursor-pointer">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                    今天的美好时光 {index}
-                  </h3>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    2024年12月{25 - index}日
-                  </span>
+          <div className="space-y-6">
+            {searchResults.map((result) => (
+              <div 
+                key={result.id}
+                onClick={() => router.push(`/diary/${result.id}`)}
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-4 rounded-lg transition-colors"
+              >
+                <h3 
+                  className="text-lg font-semibold text-gray-900 dark:text-white mb-2"
+                  dangerouslySetInnerHTML={{ __html: result.highlightedTitle || result.title }}
+                />
+                <p 
+                  className="text-gray-600 dark:text-gray-400 mb-3"
+                  dangerouslySetInnerHTML={{ __html: result.highlightedContent || result.content }}
+                />
+                <div className="flex flex-wrap gap-2">
+                  {result.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300"
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                  今天和<mark className="bg-yellow-200 dark:bg-yellow-800 px-1">朋友</mark>一起去了咖啡厅，聊了很多有趣的话题。天气很好，心情也很棒。下午的阳光透过窗户洒在桌子上，感觉特别<mark className="bg-yellow-200 dark:bg-yellow-800 px-1">温暖</mark>...
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex space-x-2">
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300">
-                      生活
-                    </span>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300">
-                      朋友
-                    </span>
-                  </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    匹配度: 85%
-                  </span>
+                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  {new Date(result.createdAt).toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                 </div>
               </div>
             ))}
+
+            {searchResults.length === 0 && !isLoading && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  {searchQuery || selectedTags.length > 0 || dateRange
+                    ? '未找到相关日记'
+                    : '开始搜索你的日记'}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {searchQuery || selectedTags.length > 0 || dateRange
+                    ? '试试更换关键词或筛选条件'
+                    : '输入关键词或选择标签来查找相关的日记内容'}
+                </p>
+              </div>
+            )}
           </div>
-          
-          {/* Empty State */}
-          {searchQuery === '' && (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                开始搜索你的日记
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                输入关键词或选择标签来查找相关的日记内容
-              </p>
-            </div>
-          )}
         </div>
       </div>
 

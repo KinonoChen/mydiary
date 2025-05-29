@@ -1,0 +1,168 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+
+// GET /api/diaries - 获取用户的所有日记
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const search = searchParams.get('search') || ''
+    const tag = searchParams.get('tag') || ''
+    const mood = searchParams.get('mood') || ''
+    const weather = searchParams.get('weather') || ''
+
+    // 查找用户
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // 构建查询条件
+    const where: any = {
+      userId: user.id
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+
+    if (tag) {
+      where.tags = { contains: tag }
+    }
+
+    if (mood) {
+      where.mood = mood
+    }
+
+    if (weather) {
+      where.weather = weather
+    }
+
+    // 获取总数
+    const total = await prisma.diary.count({ where })
+
+    // 获取分页数据
+    const diaries = await prisma.diary.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        tags: true,
+        mood: true,
+        weather: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
+
+    // 处理tags字段（从JSON字符串转换为数组）
+    const processedDiaries = diaries.map(diary => ({
+      ...diary,
+      tags: diary.tags ? JSON.parse(diary.tags) : []
+    }))
+
+    return NextResponse.json({
+      data: processedDiaries,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    })
+
+  } catch (error) {
+    console.error('Error fetching diaries:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// POST /api/diaries - 创建新日记
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { title, content, tags = [], mood, weather } = body
+
+    // 验证必填字段
+    if (!title || !content) {
+      return NextResponse.json(
+        { error: 'Title and content are required' },
+        { status: 400 }
+      )
+    }
+
+    // 查找用户
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // 创建日记
+    const diary = await prisma.diary.create({
+      data: {
+        title: title.trim(),
+        content: content.trim(),
+        tags: JSON.stringify(tags),
+        mood: mood || null,
+        weather: weather || null,
+        userId: user.id
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        tags: true,
+        mood: true,
+        weather: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
+
+    // 处理tags字段
+    const processedDiary = {
+      ...diary,
+      tags: diary.tags ? JSON.parse(diary.tags) : []
+    }
+
+    return NextResponse.json(processedDiary, { status: 201 })
+
+  } catch (error) {
+    console.error('Error creating diary:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+} 

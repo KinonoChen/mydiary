@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function NewDiaryPage() {
   const [title, setTitle] = useState('')
@@ -8,6 +9,9 @@ export default function NewDiaryPage() {
   const [tags, setTags] = useState<string[]>([])
   const [mood, setMood] = useState('')
   const [weather, setWeather] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const router = useRouter()
 
   const handleAddTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
@@ -17,6 +21,44 @@ export default function NewDiaryPage() {
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove))
+  }
+
+  const handleSubmit = async () => {
+    if (!title.trim() || !content.trim()) {
+      setError('标题和内容不能为空')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/diaries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          content: content.trim(),
+          tags,
+          mood,
+          weather,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || '发布失败')
+      }
+
+      // 发布成功，跳转到日记列表页
+      router.push('/diary')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '发布失败，请重试')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -32,14 +74,29 @@ export default function NewDiaryPage() {
           </p>
         </div>
         <div className="flex space-x-3 mt-4 sm:mt-0">
-          <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            保存草稿
+          <button 
+            onClick={() => router.back()}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            取消
           </button>
-          <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-            发布日记
+          <button 
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? '发布中...' : '发布日记'}
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+          <div className="text-sm text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        </div>
+      )}
 
       {/* Main Form */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
