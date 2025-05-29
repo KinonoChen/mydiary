@@ -1,0 +1,176 @@
+'use client'
+
+import { useState } from 'react'
+
+export default function SearchPage() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [dateRange, setDateRange] = useState('')
+
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          搜索日记
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
+          找到你想要的回忆
+        </p>
+      </div>
+
+      {/* Search Form */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        {/* Main Search */}
+        <div className="mb-6">
+          <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            搜索内容
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              id="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索日记标题、内容..."
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-gray-400 text-xl">🔍</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Tags Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              标签筛选
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {['生活', '工作', '学习', '旅行', '美食', '运动', '读书', '电影'].map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagToggle(tag)}
+                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                    selectedTags.includes(tag)
+                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Date Range Filter */}
+          <div>
+            <label htmlFor="dateRange" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              时间范围
+            </label>
+            <select
+              id="dateRange"
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="">全部时间</option>
+              <option value="today">今天</option>
+              <option value="week">最近一周</option>
+              <option value="month">最近一月</option>
+              <option value="year">最近一年</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Search Button */}
+        <div className="mt-6 flex justify-center">
+          <button className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+            开始搜索
+          </button>
+        </div>
+      </div>
+
+      {/* Search Results */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            搜索结果
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            找到 5 条相关日记
+          </p>
+        </div>
+        
+        <div className="p-6">
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((index) => (
+              <div key={index} className="border-l-4 border-blue-500 pl-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-r-lg transition-colors cursor-pointer">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    今天的美好时光 {index}
+                  </h3>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    2024年12月{25 - index}日
+                  </span>
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                  今天和<mark className="bg-yellow-200 dark:bg-yellow-800 px-1">朋友</mark>一起去了咖啡厅，聊了很多有趣的话题。天气很好，心情也很棒。下午的阳光透过窗户洒在桌子上，感觉特别<mark className="bg-yellow-200 dark:bg-yellow-800 px-1">温暖</mark>...
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex space-x-2">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300">
+                      生活
+                    </span>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300">
+                      朋友
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    匹配度: 85%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Empty State */}
+          {searchQuery === '' && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                开始搜索你的日记
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                输入关键词或选择标签来查找相关的日记内容
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Search Tips */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+        <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+          💡 搜索小贴士
+        </h3>
+        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+          <li>• 支持搜索日记标题和内容</li>
+          <li>• 可以组合多个标签进行精确筛选</li>
+          <li>• 使用时间范围快速定位特定时期的日记</li>
+          <li>• 搜索结果会高亮显示匹配的关键词</li>
+        </ul>
+      </div>
+    </div>
+  )
+} 
