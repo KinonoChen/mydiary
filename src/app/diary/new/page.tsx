@@ -9,6 +9,11 @@ export default function NewDiaryPage() {
   const [tags, setTags] = useState<string[]>([])
   const [mood, setMood] = useState('')
   const [weather, setWeather] = useState('')
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // 默认为今天的日期
+    const today = new Date()
+    return today.toISOString().split('T')[0]
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -33,6 +38,18 @@ export default function NewDiaryPage() {
     setError('')
 
     try {
+      // 构建完整的日期时间
+      let selectedDateTime
+      const today = new Date().toISOString().split('T')[0]
+      
+      if (selectedDate === today) {
+        // 如果选择的是今天，使用当前时间
+        selectedDateTime = new Date()
+      } else {
+        // 如果选择的是其他日期，使用22:00:00
+        selectedDateTime = new Date(`${selectedDate}T22:00:00`)
+      }
+      
       const response = await fetch('/api/diaries', {
         method: 'POST',
         headers: {
@@ -44,6 +61,7 @@ export default function NewDiaryPage() {
           tags,
           mood,
           weather,
+          createdAt: selectedDateTime.toISOString(), // 添加自定义创建时间
         }),
       })
 
@@ -59,6 +77,30 @@ export default function NewDiaryPage() {
       setError(err instanceof Error ? err.message : '发布失败，请重试')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // 格式化日期显示
+  const formatDateDisplay = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    if (dateStr === today.toISOString().split('T')[0]) {
+      return '今天'
+    } else if (dateStr === yesterday.toISOString().split('T')[0]) {
+      return '昨天'
+    } else if (dateStr === tomorrow.toISOString().split('T')[0]) {
+      return '明天'
+    } else {
+      return date.toLocaleDateString('zh-CN', { 
+        month: 'long', 
+        day: 'numeric',
+        weekday: 'short'
+      })
     }
   }
 
@@ -102,6 +144,66 @@ export default function NewDiaryPage() {
       {/* Main Form */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-6 space-y-6">
+          {/* Date Selection */}
+          <div>
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              📅 记录日期
+            </label>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* 快捷日期选择按钮 */}
+              {[
+                { label: '今天', offset: 0, emoji: '📆' },
+                { label: '昨天', offset: -1, emoji: '📋' },
+                { label: '前天', offset: -2, emoji: '📄' }
+              ].map(({ label, offset, emoji }) => {
+                const date = new Date()
+                date.setDate(date.getDate() + offset)
+                const dateStr = date.toISOString().split('T')[0]
+                const isSelected = selectedDate === dateStr
+                
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setSelectedDate(dateStr)}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      isSelected
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <span className="mr-1">{emoji}</span>
+                    {label}
+                  </button>
+                )
+              })}
+              
+              {/* 自定义日期选择 */}
+              <input
+                type="date"
+                id="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              />
+              
+              {/* 时间显示 */}
+              <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                <span className="font-medium">{formatDateDisplay(selectedDate)}</span>
+                <span className="ml-2 flex items-center">
+                  🕘 {(() => {
+                    const today = new Date().toISOString().split('T')[0]
+                    if (selectedDate === today) {
+                      return '当前时间'
+                    } else {
+                      return '22:00'
+                    }
+                  })()}
+                </span>
+              </span>
+            </div>
+          </div>
+
           {/* Title */}
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

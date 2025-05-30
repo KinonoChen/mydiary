@@ -22,6 +22,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
   const [tags, setTags] = useState<string[]>([])
   const [mood, setMood] = useState('')
   const [weather, setWeather] = useState('')
+  const [selectedDate, setSelectedDate] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
@@ -44,6 +45,9 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
         setTags(data.tags)
         setMood(data.mood || '')
         setWeather(data.weather || '')
+        // 设置日期，从createdAt中提取日期部分
+        const createdDate = new Date(data.createdAt)
+        setSelectedDate(createdDate.toISOString().split('T')[0])
       } catch (err) {
         setError(err instanceof Error ? err.message : '获取日记失败')
       } finally {
@@ -74,6 +78,10 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     setError('')
 
     try {
+      // 构建完整的日期时间（选择的日期 + 原有的时间）
+      const originalDate = new Date(diary?.createdAt || '')
+      const selectedDateTime = new Date(`${selectedDate}T${originalDate.toTimeString().split(' ')[0]}`)
+      
       const response = await fetch(`/api/diaries/${resolvedParams.id}`, {
         method: 'PUT',
         headers: {
@@ -85,6 +93,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
           tags,
           mood,
           weather,
+          createdAt: selectedDateTime.toISOString(), // 添加自定义创建时间
         }),
       })
 
@@ -100,6 +109,30 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
       setError(err instanceof Error ? err.message : '保存失败，请重试')
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  // 格式化日期显示
+  const formatDateDisplay = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    if (dateStr === today.toISOString().split('T')[0]) {
+      return '今天'
+    } else if (dateStr === yesterday.toISOString().split('T')[0]) {
+      return '昨天'
+    } else if (dateStr === tomorrow.toISOString().split('T')[0]) {
+      return '明天'
+    } else {
+      return date.toLocaleDateString('zh-CN', { 
+        month: 'long', 
+        day: 'numeric',
+        weekday: 'short'
+      })
     }
   }
 
@@ -151,14 +184,14 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
         <div className="flex space-x-3 mt-4 sm:mt-0">
           <button 
             onClick={() => router.back()}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
           >
             取消
           </button>
           <button 
             onClick={handleSubmit}
             disabled={isSaving}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isSaving ? '保存中...' : '保存修改'}
           </button>
@@ -176,6 +209,62 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
       {/* Main Form */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-6 space-y-6">
+          {/* Date Selection */}
+          <div>
+            <label htmlFor="edit-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              📅 记录日期
+            </label>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* 快捷日期选择按钮 */}
+              {[
+                { label: '今天', offset: 0, emoji: '📆' },
+                { label: '昨天', offset: -1, emoji: '📋' },
+                { label: '前天', offset: -2, emoji: '📄' }
+              ].map(({ label, offset, emoji }) => {
+                const date = new Date()
+                date.setDate(date.getDate() + offset)
+                const dateStr = date.toISOString().split('T')[0]
+                const isSelected = selectedDate === dateStr
+                
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setSelectedDate(dateStr)}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      isSelected
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <span className="mr-1">{emoji}</span>
+                    {label}
+                  </button>
+                )
+              })}
+              
+              {/* 自定义日期选择 */}
+              <input
+                type="date"
+                id="edit-date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              />
+              
+              {/* 时间显示 */}
+              <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                <span className="font-medium">{formatDateDisplay(selectedDate)}</span>
+                <span className="ml-2 flex items-center">
+                  🕘 {diary ? new Date(diary.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '22:00'}
+                  <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">
+                    (保持原有时间)
+                  </span>
+                </span>
+              </span>
+            </div>
+          </div>
+
           {/* Title */}
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

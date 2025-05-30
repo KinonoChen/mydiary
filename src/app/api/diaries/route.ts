@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, content, tags = [], mood, weather } = body
+    const { title, content, tags = [], mood, weather, createdAt } = body
 
     // 验证必填字段
     if (!title || !content) {
@@ -131,6 +131,15 @@ export async function POST(request: NextRequest) {
     // 确保 tags 是数组并进行序列化
     const processedTags = Array.isArray(tags) ? tags : []
 
+    // 处理创建时间
+    let diaryCreatedAt = new Date()
+    if (createdAt) {
+      const customDate = new Date(createdAt)
+      if (!isNaN(customDate.getTime())) {
+        diaryCreatedAt = customDate
+      }
+    }
+
     // 创建日记
     const diary = await prisma.diary.create({
       data: {
@@ -139,7 +148,8 @@ export async function POST(request: NextRequest) {
         tags: JSON.stringify(processedTags),
         mood: mood || null,
         weather: weather || null,
-        userId: user.id
+        userId: user.id,
+        createdAt: diaryCreatedAt
       },
       select: {
         id: true,
