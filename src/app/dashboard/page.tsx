@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { formatDate, formatRelativeTime } from '@/lib/utils'
 
 interface DiaryStats {
   total: number
@@ -96,16 +97,6 @@ export default function DashboardPage() {
       return `${(words / 1000).toFixed(1)}k`
     }
     return words.toString()
-  }
-
-  // 格式化日期
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
   }
 
   // 获取本月统计

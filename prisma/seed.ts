@@ -150,7 +150,25 @@ async function main() {
       mood: 'focused',
       weather: 'cloudy',
       userId: testUser.id,
-      createdAt: new Date('2024-01-11')
+      createdAt: new Date('2024-01-11')//不指定时间 JavaScript 会默认设置为 00:00:00且为utc时区，这与有时间的情况不同
+    },
+    {
+      title: '测试日记3',
+      content: '这是第三篇测试日记，测试时区问题。',
+      tags: JSON.stringify(['测试', '开发']),
+      mood: 'focused',
+      weather: 'cloudy',
+      userId: testUser.id,
+      createdAt: new Date('2025-05-01T06:30:00')//指定时间不指定时区，js默认解析为本地时间
+    },
+    {
+      title: '测试日记4',
+      content: '这是第四篇测试日记，还是测试时区问题。',
+      tags: JSON.stringify(['测试', '开发']),
+      mood: 'focused',
+      weather: 'cloudy',
+      userId: testUser.id,
+      createdAt: new Date('2025-04-30T20:30:00Z')
     }
   ]
 

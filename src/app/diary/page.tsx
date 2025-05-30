@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { formatDateTime, formatRelativeTime } from '@/lib/utils'
 
 interface Diary {
   id: string
@@ -227,12 +228,8 @@ export default function DiaryPage() {
                     {diary.title}
                   </h3>
                   <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                    <span>
-                      {new Date(diary.createdAt).toLocaleString('zh-CN', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                    <span title={formatDateTime(diary.createdAt)}>
+                      {formatRelativeTime(diary.createdAt)}
                     </span>
                     {diary.weather && (
                       <span className="flex items-center gap-1" title={weatherText[diary.weather]}>

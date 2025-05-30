@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { formatDate, formatFullDateTime } from '@/lib/utils'
 
 interface Diary {
   id: string
@@ -236,7 +237,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
         {diary.updatedAt !== diary.createdAt && (
           <div className="px-6 pb-6">
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              最后编辑于 {formatDate(diary.updatedAt)}
+              最后编辑于 {formatFullDateTime(diary.updatedAt)}
             </div>
           </div>
         )}
