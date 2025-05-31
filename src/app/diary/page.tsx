@@ -9,8 +9,8 @@ interface Diary {
   title: string
   content: string
   tags: string[]
-  mood: string | null
-  weather: string | null
+  mood: string[]
+  weather: string[]
   createdAt: string
   updatedAt: string
 }
@@ -231,16 +231,24 @@ export default function DiaryPage() {
                     <span title={formatDateTime(diary.createdAt)}>
                       {formatRelativeTime(diary.createdAt)}
                     </span>
-                    {diary.weather && (
-                      <span className="flex items-center gap-1" title={weatherText[diary.weather]}>
-                        {weatherIcons[diary.weather]}
-                        {weatherText[diary.weather]}
+                    {diary.weather && diary.weather.length > 0 && (
+                      <span className="flex items-center gap-1" title={diary.weather.map(w => weatherText[w]).join(', ')}>
+                        {diary.weather.map(w => (
+                          <span key={w} className="flex items-center gap-1">
+                            {weatherIcons[w]}
+                            {weatherText[w]}
+                          </span>
+                        ))}
                       </span>
                     )}
-                    {diary.mood && (
-                      <span className="flex items-center gap-1" title={moodText[diary.mood]}>
-                        {moodIcons[diary.mood]}
-                        {moodText[diary.mood]}
+                    {diary.mood && diary.mood.length > 0 && (
+                      <span className="flex items-center gap-1" title={diary.mood.map(m => moodText[m]).join(', ')}>
+                        {diary.mood.map(m => (
+                          <span key={m} className="flex items-center gap-1">
+                            {moodIcons[m]}
+                            {moodText[m]}
+                          </span>
+                        ))}
                       </span>
                     )}
                   </div>

@@ -55,7 +55,9 @@ export async function GET(
     // 处理tags字段
     const processedDiary = {
       ...diary,
-      tags: diary.tags ? JSON.parse(diary.tags) : []
+      tags: diary.tags ? JSON.parse(diary.tags) : [],
+      mood: diary.mood ? JSON.parse(diary.mood) : [],
+      weather: diary.weather ? JSON.parse(diary.weather) : []
     }
 
     return NextResponse.json(processedDiary)
@@ -129,6 +131,10 @@ export async function PUT(
     // 确保 tags 是数组并进行序列化
     const processedTags = Array.isArray(tags) ? tags : []
 
+    // 新增：处理 mood 和 weather，确保是数组，并进行序列化
+    const processedMood = Array.isArray(mood) && mood.length > 0 ? JSON.stringify(mood) : null
+    const processedWeather = Array.isArray(weather) && weather.length > 0 ? JSON.stringify(weather) : null
+
     // 处理创建时间
     let diaryCreatedAt = existingDiary.createdAt
     if (createdAt) {
@@ -145,8 +151,8 @@ export async function PUT(
         title: title.trim(),
         content: content.replace(/\s+$/, ''),
         tags: JSON.stringify(processedTags),
-        mood: mood || null,
-        weather: weather || null,
+        mood: processedMood,
+        weather: processedWeather,
         updatedAt: new Date(),
         createdAt: diaryCreatedAt
       },
@@ -162,13 +168,15 @@ export async function PUT(
       }
     })
 
-    // 处理返回的 tags 字段
-    const processedDiary = {
+    // 处理返回的 tags, mood, weather 字段
+    const processedUpdatedDiary = {
       ...updatedDiary,
-      tags: processedTags
+      tags: processedTags,
+      mood: updatedDiary.mood ? JSON.parse(updatedDiary.mood) : [],
+      weather: updatedDiary.weather ? JSON.parse(updatedDiary.weather) : []
     }
 
-    return NextResponse.json(processedDiary)
+    return NextResponse.json(processedUpdatedDiary)
 
   } catch (error) {
     console.error('Error updating diary:', error)

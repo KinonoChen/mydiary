@@ -3,12 +3,29 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+const moodOptions = [
+  { value: "happy", label: "😊 开心" },
+  { value: "excited", label: "🤩 兴奋" },
+  { value: "calm", label: "😌 平静" },
+  { value: "thoughtful", label: "🤔 沉思" },
+  { value: "sad", label: "😢 难过" },
+  { value: "angry", label: "😠 愤怒" },
+];
+
+const weatherOptions = [
+  { value: "sunny", label: "☀️ 晴天" },
+  { value: "cloudy", label: "☁️ 多云" },
+  { value: "rainy", label: "🌧️ 雨天" },
+  { value: "snowy", label: "❄️ 雪天" },
+  { value: "windy", label: "💨 大风" },
+];
+
 export default function NewDiaryPage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [tags, setTags] = useState<string[]>([])
-  const [mood, setMood] = useState('')
-  const [weather, setWeather] = useState('')
+  const [mood, setMood] = useState<string[]>([])
+  const [weather, setWeather] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState(() => {
     // 默认为今天的日期
     const today = new Date()
@@ -27,6 +44,18 @@ export default function NewDiaryPage() {
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove))
   }
+
+  const handleToggleSelection = (
+    item: string,
+    currentSelection: string[],
+    setter: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    if (currentSelection.includes(item)) {
+      setter(currentSelection.filter((i) => i !== item));
+    } else {
+      setter([...currentSelection, item]);
+    }
+  };
 
   const handleSubmit = async () => {
     // 验证逻辑与后端保持一致
@@ -248,38 +277,44 @@ export default function NewDiaryPage() {
               <label htmlFor="mood" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 心情
               </label>
-              <select
-                id="mood"
-                value={mood}
-                onChange={(e) => setMood(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="">选择心情</option>
-                <option value="happy">😊 开心</option>
-                <option value="excited">🤩 兴奋</option>
-                <option value="calm">😌 平静</option>
-                <option value="thoughtful">🤔 沉思</option>
-                <option value="sad">😢 难过</option>
-                <option value="angry">😠 愤怒</option>
-              </select>
+              <div className="flex flex-wrap gap-2">
+                {moodOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleToggleSelection(option.value, mood, setMood)}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      mood.includes(option.value)
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
+            
             <div>
               <label htmlFor="weather" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 天气
               </label>
-              <select
-                id="weather"
-                value={weather}
-                onChange={(e) => setWeather(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="">选择天气</option>
-                <option value="sunny">☀️ 晴天</option>
-                <option value="cloudy">☁️ 多云</option>
-                <option value="rainy">🌧️ 雨天</option>
-                <option value="snowy">❄️ 雪天</option>
-                <option value="windy">💨 大风</option>
-              </select>
+              <div className="flex flex-wrap gap-2">
+                {weatherOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleToggleSelection(option.value, weather, setWeather)}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      weather.includes(option.value)
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

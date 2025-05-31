@@ -3,6 +3,18 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// 定义从数据库获取的日记条目类型
+interface DiaryFromDB {
+  id: string;
+  title: string;
+  content: string;
+  tags: string | null; // 从数据库读出时为 string 或 null
+  mood: string | null; // 从数据库读出时为 string 或 null
+  weather: string | null; // 从数据库读出时为 string 或 null
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // GET /api/diaries - 获取用户的所有日记
 export async function GET(request: NextRequest) {
   try {
@@ -75,9 +87,11 @@ export async function GET(request: NextRequest) {
     })
 
     // 处理tags字段（从JSON字符串转换为数组）
-    const processedDiaries = diaries.map(diary => ({
+    const processedDiaries = diaries.map((diary: DiaryFromDB) => ({
       ...diary,
-      tags: diary.tags ? JSON.parse(diary.tags) : []
+      tags: diary.tags ? JSON.parse(diary.tags) : [],
+      mood: diary.mood ? JSON.parse(diary.mood) : [],
+      weather: diary.weather ? JSON.parse(diary.weather) : []
     }))
 
     return NextResponse.json({
@@ -139,6 +153,10 @@ export async function POST(request: NextRequest) {
     // 确保 tags 是数组并进行序列化
     const processedTags = Array.isArray(tags) ? tags : []
 
+    // 新增：处理 mood 和 weather，确保是数组，并进行序列化
+    const processedMood = Array.isArray(mood) && mood.length > 0 ? JSON.stringify(mood) : null
+    const processedWeather = Array.isArray(weather) && weather.length > 0 ? JSON.stringify(weather) : null
+
     // 处理创建时间
     let diaryCreatedAt = new Date()
     if (createdAt) {
@@ -154,8 +172,8 @@ export async function POST(request: NextRequest) {
         title: title.trim(),
         content: content.replace(/\s+$/, ''),
         tags: JSON.stringify(processedTags),
-        mood: mood || null,
-        weather: weather || null,
+        mood: processedMood,
+        weather: processedWeather,
         userId: user.id,
         createdAt: diaryCreatedAt
       },
@@ -171,10 +189,12 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // 处理返回的 tags 字段
+    // 处理返回的 tags, mood, weather 字段
     const processedDiary = {
       ...diary,
-      tags: processedTags
+      tags: processedTags,
+      mood: diary.mood ? JSON.parse(diary.mood) : [],
+      weather: diary.weather ? JSON.parse(diary.weather) : []
     }
 
     return NextResponse.json(processedDiary, { status: 201 })
