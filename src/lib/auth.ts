@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
+import { createDefaultTagsForUser } from './user-tags'
 
 declare module 'next-auth' {
   interface Session {
@@ -67,6 +68,9 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        
+        // 当用户首次登录时，检查并创建默认标签
+        await createDefaultTagsForUser(user.id)
       }
       return token
     },

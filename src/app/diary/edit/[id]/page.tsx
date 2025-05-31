@@ -127,7 +127,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     }
 
     if (session) {
-      fetchDiary()
+    fetchDiary()
     }
   }, [resolvedParams.id, session])
 
@@ -323,7 +323,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                   <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
                 ) : (
                   tagsData.moods.map((moodOption) => (
-                    <button
+                  <button
                       key={moodOption.id}
                       onClick={() => handleToggleSelection(moodOption, mood, setMood)}
                       className={`px-3 py-1 rounded-full text-sm border transition-colors ${
@@ -333,7 +333,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                       }`}
                     >
                       {moodOption.icon} {moodOption.label || moodOption.value}
-                    </button>
+                  </button>
                   ))
                 )}
               </div>
@@ -348,7 +348,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                   <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
                 ) : (
                   tagsData.weathers.map((weatherOption) => (
-                    <button
+                  <button
                       key={weatherOption.id}
                       onClick={() => handleToggleSelection(weatherOption, weather, setWeather)}
                       className={`px-3 py-1 rounded-full text-sm border transition-colors ${
@@ -358,7 +358,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                       }`}
                     >
                       {weatherOption.icon} {weatherOption.label || weatherOption.value}
-                    </button>
+                  </button>
                   ))
                 )}
               </div>
@@ -424,18 +424,18 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                 <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
               ) : (
                 tagsData.tags.map((tagOption) => (
-                  <button
+                <button
                     key={tagOption.id}
                     onClick={() => handleAddTag(tagOption.value)}
-                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
                       tags.includes(tagOption.value)
-                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
-                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
+                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
                     disabled={tags.includes(tagOption.value)}
-                  >
+                >
                     {tagOption.value}
-                  </button>
+                </button>
                 ))
               )}
             </div>

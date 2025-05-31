@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
+import { createDefaultTagsForUser } from '@/lib/user-tags'
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,6 +64,9 @@ export async function POST(request: NextRequest) {
         createdAt: true,
       }
     })
+    
+    // 为新用户创建默认标签
+    await createDefaultTagsForUser(user.id)
 
     return NextResponse.json(
       { 
