@@ -17,7 +17,8 @@ interface DiaryCardProps {
   diary: Diary
   onEdit: () => void
   onDelete: () => void
-  formatDate: (dateStr: string) => string
+  formatRelativeTime: (dateStr: string) => string
+  formatDateTime: (dateStr: string) => string
   getTagDisplay: (value: string, type: 'mood' | 'weather' | 'tag') => { text: string, icon?: string }
 }
 
@@ -25,7 +26,8 @@ export default function DiaryCard({
   diary, 
   onEdit, 
   onDelete, 
-  formatDate, 
+  formatRelativeTime,
+  formatDateTime,
   getTagDisplay 
 }: DiaryCardProps) {
   const router = useRouter()
@@ -41,8 +43,8 @@ export default function DiaryCard({
             {diary.title}
           </h3>
           <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-            <span>
-              {formatDate(diary.createdAt)}
+            <span title={formatDateTime(diary.createdAt)}>
+              {formatRelativeTime(diary.createdAt)}
             </span>
             {diary.weather && diary.weather.length > 0 && (
               <span className="flex items-center gap-1">

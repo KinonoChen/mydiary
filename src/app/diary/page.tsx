@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import DiaryCard from '@/components/diary/DiaryCard'
+import { formatDateTime, formatRelativeTime } from '@/lib/utils'
 
 // 标签类型
 interface Tag {
@@ -133,27 +134,40 @@ export default function DiaryPage() {
   }
 
   // 格式化日期显示
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  // const formatRelativeTime = (dateStr: string) => {
+  //   const date = new Date(dateStr)
+  //   const now = new Date()
+  //   const diffMs = now.getTime() - date.getTime()
+  //   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
     
-    if (diffDays === 0) {
-      return '今天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    } else if (diffDays === 1) {
-      return '昨天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    } else if (diffDays < 7) {
-      return `${diffDays}天前`
-    } else {
-      return date.toLocaleDateString('zh-CN', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      })
-    }
-  }
+  //   if (diffDays === 0) {
+  //     return '今天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  //   } else if (diffDays === 1) {
+  //     return '昨天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  //   } else if (diffDays < 7) {
+  //     return `${diffDays}天前`
+  //   } else {
+  //     return date.toLocaleDateString('zh-CN', { 
+  //       year: 'numeric', 
+  //       month: 'long', 
+  //       day: 'numeric' 
+  //     })
+  //   }
+  // }
   
+  // // 新增：格式化完整日期时间
+  // const formatDateTime = (dateStr: string) => {
+  //   const date = new Date(dateStr)
+  //   return date.toLocaleString('zh-CN', { 
+  //     year: 'numeric', 
+  //     month: 'long', 
+  //     day: 'numeric',
+  //     hour: '2-digit',
+  //     minute: '2-digit',
+  //     second: '2-digit' 
+  //   })
+  // }
+
   // 获取标签、心情和天气的显示文本
   const getTagDisplay = (value: string, type: 'mood' | 'weather' | 'tag'): { text: string, icon?: string } => {
     if (type === 'mood') {
@@ -286,7 +300,8 @@ export default function DiaryPage() {
                 diary={diary}
                 onEdit={() => handleEdit(diary.id)}
                 onDelete={() => handleDelete(diary.id)}
-                formatDate={formatDate}
+                formatRelativeTime={formatRelativeTime}
+                formatDateTime={formatDateTime}
                 getTagDisplay={getTagDisplay}
               />
             ))}

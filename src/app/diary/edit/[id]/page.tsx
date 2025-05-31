@@ -284,14 +284,10 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
               <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                 <span className="font-medium">{formatDateDisplay(selectedDate)}</span>
                 <span className="ml-2 flex items-center">
-                  🕘 {(() => {
-                    const today = new Date().toISOString().split('T')[0]
-                    if (selectedDate === today) {
-                      return '当前时间'
-                    } else {
-                      return '22:00'
-                    }
-                  })()}
+                  🕘 {diary ? new Date(diary.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '22:00'}
+                    <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">
+                      (保持原有时间)
+                    </span>
                 </span>
               </span>
             </div>
