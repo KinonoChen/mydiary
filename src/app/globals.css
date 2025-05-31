@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Tab字符样式处理 */
+.whitespace-pre-wrap {
+  tab-size: 4; /* 设置Tab字符的显示宽度为4个空格 */
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+}
+
+/* 文本编辑区域的特殊处理 */
+textarea {
+  tab-size: 4;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+}

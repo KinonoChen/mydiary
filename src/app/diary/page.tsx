@@ -267,7 +267,7 @@ export default function DiaryPage() {
                 </div>
               </div>
               
-              <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3">
+              <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3 whitespace-pre-wrap">
                 {diary.content}
               </p>
               

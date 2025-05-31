@@ -118,6 +118,14 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+    
+    // 验证去除末尾空白后的内容是否为空
+    if (!title.trim() || !content.replace(/\s+$/, '').trim()) {
+      return NextResponse.json(
+        { error: 'Title and content cannot be empty' },
+        { status: 400 }
+      )
+    }
 
     // 查找用户
     const user = await prisma.user.findUnique({
@@ -144,7 +152,7 @@ export async function POST(request: NextRequest) {
     const diary = await prisma.diary.create({
       data: {
         title: title.trim(),
-        content: content.trim(),
+        content: content.replace(/\s+$/, ''),
         tags: JSON.stringify(processedTags),
         mood: mood || null,
         weather: weather || null,

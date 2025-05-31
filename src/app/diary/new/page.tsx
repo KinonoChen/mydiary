@@ -29,7 +29,8 @@ export default function NewDiaryPage() {
   }
 
   const handleSubmit = async () => {
-    if (!title.trim() || !content.trim()) {
+    // 验证逻辑与后端保持一致
+    if (!title.trim() || !content.replace(/\s+$/, '').trim()) {
       setError('标题和内容不能为空')
       return
     }
@@ -50,6 +51,9 @@ export default function NewDiaryPage() {
         selectedDateTime = new Date(`${selectedDate}T22:00:00`)
       }
       
+      // 只去除末尾的空白字符，保留开头的缩进
+      const trimmedContent = content.replace(/\s+$/, '')
+      
       const response = await fetch('/api/diaries', {
         method: 'POST',
         headers: {
@@ -57,7 +61,7 @@ export default function NewDiaryPage() {
         },
         body: JSON.stringify({
           title: title.trim(),
-          content: content.trim(),
+          content: trimmedContent,
           tags,
           mood,
           weather,
@@ -77,6 +81,25 @@ export default function NewDiaryPage() {
       setError(err instanceof Error ? err.message : '发布失败，请重试')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // 处理Tab键缩进
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      const target = e.target as HTMLTextAreaElement
+      const start = target.selectionStart
+      const end = target.selectionEnd
+      
+      // 插入Tab字符
+      const newContent = content.substring(0, start) + '\t' + content.substring(end)
+      setContent(newContent)
+      
+      // 恢复光标位置
+      setTimeout(() => {
+        target.selectionStart = target.selectionEnd = start + 1
+      }, 0)
     }
   }
 
@@ -272,6 +295,7 @@ export default function NewDiaryPage() {
               rows={12}
               placeholder="今天你想记录什么？可以是发生的事情、内心的感受、学到的东西..."
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+              onKeyDown={handleKeyDown}
             />
             <div className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">
               {content.length} 字

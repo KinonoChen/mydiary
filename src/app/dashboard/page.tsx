@@ -222,7 +222,7 @@ export default function DashboardPage() {
                     <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
                       {diary.title}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 whitespace-pre-wrap">
                       {diary.content.substring(0, 100)}...
                     </p>
                     <div className="flex items-center mt-2 space-x-4">
