@@ -31,6 +31,14 @@ interface Diary {
   updatedAt: string
 }
 
+// 获取本地时区的日期字符串(YYYY-MM-DD)
+function getLocalDateString(date: Date = new Date()): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export default function EditDiaryPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const { data: session } = useSession()
@@ -118,7 +126,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
         }
         // 设置日期，从createdAt中提取日期部分
         const createdDate = new Date(data.createdAt)
-        setSelectedDate(createdDate.toISOString().split('T')[0])
+        setSelectedDate(getLocalDateString(createdDate))
       } catch (err) {
         setError(err instanceof Error ? err.message : '获取日记失败')
       } finally {
@@ -168,14 +176,16 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     try {
       // 构建完整的日期时间
       let selectedDateTime
-      const today = new Date().toISOString().split('T')[0]
+      const today = getLocalDateString()
       
       if (selectedDate === today) {
         // 如果选择的是今天，使用当前时间
         selectedDateTime = new Date()
       } else {
         // 如果选择的是其他日期，使用22:00:00
-        selectedDateTime = new Date(`${selectedDate}T22:00:00`)
+        const [year, month, day] = selectedDate.split('-').map(Number)
+        // 注意月份从0开始
+        selectedDateTime = new Date(year, month - 1, day, 22, 0, 0)
       }
       
       // 只去除末尾的空白字符，保留开头的缩进
@@ -233,17 +243,22 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
   // 格式化日期显示
   const formatDateDisplay = (dateStr: string) => {
     const date = new Date(dateStr)
-    const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    const today = getLocalDateString()
+    
+    // 计算昨天和明天的日期字符串，使用本地时区
+    const yesterdayDate = new Date()
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+    const yesterday = getLocalDateString(yesterdayDate)
+    
+    const tomorrowDate = new Date()
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+    const tomorrow = getLocalDateString(tomorrowDate)
 
-    if (dateStr === today.toISOString().split('T')[0]) {
+    if (dateStr === today) {
       return '今天'
-    } else if (dateStr === yesterday.toISOString().split('T')[0]) {
+    } else if (dateStr === yesterday) {
       return '昨天'
-    } else if (dateStr === tomorrow.toISOString().split('T')[0]) {
+    } else if (dateStr === tomorrow) {
       return '明天'
     } else {
       return date.toLocaleDateString('zh-CN', { 
@@ -341,7 +356,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
               ].map(({ label, offset, emoji }) => {
                 const date = new Date()
                 date.setDate(date.getDate() + offset)
-                const dateStr = date.toISOString().split('T')[0]
+                const dateStr = getLocalDateString(date)
                 const isSelected = selectedDate === dateStr
                 
                 return (

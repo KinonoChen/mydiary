@@ -20,16 +20,12 @@ interface TagsData {
   weathers: Tag[]
 }
 
-function formatDateToYYYYMMDD(date: Date): string {
+// 获取本地时区的日期字符串(YYYY-MM-DD)
+function getLocalDateString(date: Date = new Date()): string {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
   return `${year}-${month}-${day}`;
-}
-
-// 获取本地时区的日期字符串(YYYY-MM-DD)
-function getLocalDateString(date: Date = new Date()): string {
-  return formatDateToYYYYMMDD(date);
 }
 
 export default function NewDiaryPage() {
