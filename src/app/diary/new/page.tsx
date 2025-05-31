@@ -156,15 +156,27 @@ export default function NewDiaryPage() {
   }
 
   // 格式化日期显示
-  const formatDateDisplay = (dateString: string) => {
-    const date = new Date(dateString)
-    const options: Intl.DateTimeFormatOptions = { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric'
+  const formatDateDisplay = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    if (dateStr === today.toISOString().split('T')[0]) {
+      return '今天'
+    } else if (dateStr === yesterday.toISOString().split('T')[0]) {
+      return '昨天'
+    } else if (dateStr === tomorrow.toISOString().split('T')[0]) {
+      return '明天'
+    } else {
+      return date.toLocaleDateString('zh-CN', { 
+        month: 'long', 
+        day: 'numeric',
+        weekday: 'short'
+      })
     }
-    return new Intl.DateTimeFormat('zh-CN', options).format(date)
   }
 
   // 处理Tab键缩进
@@ -187,44 +199,107 @@ export default function NewDiaryPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">写日记</h1>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700">
-          {/* Date Picker */}
-          <div className="mb-6">
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              日期
-            </label>
-            <div className="flex items-center space-x-4">
-              <input
-                type="date"
-                id="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-              />
-              
-              {/* 时间显示 */}
-              <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                <span className="font-medium">{formatDateDisplay(selectedDate)}</span>
-                <span className="ml-2 flex items-center">
-                  🕘 {(() => {
-                    const today = new Date().toISOString().split('T')[0]
-                    if (selectedDate === today) {
-                      return '当前时间'
-                    } else {
-                      return '22:00'
-                    }
-                  })()}
-                </span>
-              </span>
-            </div>
-          </div>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            写新日记
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">
+            记录今天的美好时光
+          </p>
+        </div>
+        <div className="flex space-x-3 mt-4 sm:mt-0">
+          <button 
+            onClick={() => router.back()}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            取消
+          </button>
+          <button 
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            {isLoading ? '发布中...' : '发布日记'}
+          </button>
+        </div>
+      </div>
 
-          {/* Title */}
-          <div>
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+          <div className="text-sm text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        </div>
+      )}
+
+      {/* Main Form */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="p-6 space-y-6">
+        {/* Date Picker */}
+        <div>
+          <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            📅 记录日期
+          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* 快捷日期选择按钮 */}
+            {[
+              { label: '今天', offset: 0, emoji: '📆' },
+              { label: '昨天', offset: -1, emoji: '📋' },
+              { label: '前天', offset: -2, emoji: '📄' }
+            ].map(({ label, offset, emoji }) => {
+              const date = new Date()
+              date.setDate(date.getDate() + offset)
+              const dateStr = date.toISOString().split('T')[0]
+              const isSelected = selectedDate === dateStr
+              
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setSelectedDate(dateStr)}
+                  className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    isSelected
+                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <span className="mr-1">{emoji}</span>
+                  {label}
+                </button>
+              )
+            })}
+            
+            {/* 自定义日期选择 */}
+            <input
+              type="date"
+              id="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+            />
+            
+            {/* 时间显示 */}
+            <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+              <span className="font-medium">{formatDateDisplay(selectedDate)}</span>
+              <span className="ml-2 flex items-center">
+                🕘 {(() => {
+                  const today = new Date().toISOString().split('T')[0]
+                  if (selectedDate === today) {
+                    return '当前时间'
+                  } else {
+                    return '22:00'
+                  }
+                })()}
+              </span>
+            </span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               标题
             </label>
@@ -236,137 +311,130 @@ export default function NewDiaryPage() {
               placeholder="今天发生了什么特别的事情？"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
-          </div>
+        </div>
 
-          {/* Metadata */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                心情
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {isLoadingTags ? (
-                  <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
-                ) : (
-                  tagsData.moods.map((moodOption) => (
-                  <button
-                      key={moodOption.id}
-                      onClick={() => handleToggleSelection(moodOption, mood, setMood)}
-                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                        mood.includes(moodOption.label || moodOption.value)
-                          ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
-                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                      {moodOption.icon} {moodOption.label || moodOption.value}
-                  </button>
-                  ))
-                )}
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                天气
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {isLoadingTags ? (
-                  <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
-                ) : (
-                  tagsData.weathers.map((weatherOption) => (
-                  <button
-                      key={weatherOption.id}
-                      onClick={() => handleToggleSelection(weatherOption, weather, setWeather)}
-                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                        weather.includes(weatherOption.label || weatherOption.value)
-                          ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
-                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                      {weatherOption.icon} {weatherOption.label || weatherOption.value}
-                  </button>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="mt-6">
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              内容
-            </label>
-            <textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="记录你的想法、心情和一天的经历..."
-              rows={12}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
-              onKeyDown={handleKeyDown}
-            />
-          </div>
-
-          {/* Error message */}
-          {error && (
-            <div className="mt-4 text-red-500 dark:text-red-400 text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Submit Button */}
-          <div className="mt-6">
-            <button
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? '保存中...' : '保存日记'}
-            </button>
-          </div>
-
-          {/* Tags */}
+        {/* Metadata */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 mt-6">
-              标签
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              心情
             </label>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300"
-                >
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
             <div className="flex flex-wrap gap-2">
               {isLoadingTags ? (
                 <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
               ) : (
-                tagsData.tags.map((tagOption) => (
+                tagsData.moods.map((moodOption) => (
                 <button
-                    key={tagOption.id}
-                    onClick={() => handleAddTag(tagOption.value)}
-                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                      tags.includes(tagOption.value)
-                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    key={moodOption.id}
+                    onClick={() => handleToggleSelection(moodOption, mood, setMood)}
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      mood.includes(moodOption.label || moodOption.value)
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
-                    disabled={tags.includes(tagOption.value)}
                 >
-                    {tagOption.value}
+                    {moodOption.icon} {moodOption.label || moodOption.value}
                 </button>
                 ))
               )}
             </div>
           </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              天气
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {isLoadingTags ? (
+                <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
+              ) : (
+                tagsData.weathers.map((weatherOption) => (
+                <button
+                    key={weatherOption.id}
+                    onClick={() => handleToggleSelection(weatherOption, weather, setWeather)}
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      weather.includes(weatherOption.label || weatherOption.value)
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                    {weatherOption.icon} {weatherOption.label || weatherOption.value}
+                </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="mt-6">
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            内容
+          </label>
+          <textarea
+            id="content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="今天你想记录什么？可以是发生的事情、内心的感受、学到的东西..."
+            rows={12}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+            onKeyDown={handleKeyDown}
+          />
+          <div className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {content.length} 字
+          </div>
+        </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="mt-4 text-red-500 dark:text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+
+
+        {/* Tags */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 mt-6">
+            标签
+          </label>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300"
+              >
+                {tag}
+                <button
+                  onClick={() => handleRemoveTag(tag)}
+                  className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {isLoadingTags ? (
+              <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
+            ) : (
+              tagsData.tags.map((tagOption) => (
+              <button
+                  key={tagOption.id}
+                  onClick={() => handleAddTag(tagOption.value)}
+                className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                    tags.includes(tagOption.value)
+                    ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+                  disabled={tags.includes(tagOption.value)}
+              >
+                  {tagOption.value}
+              </button>
+              ))
+            )}
+          </div>
+        </div>
         </div>
       </div>
 

@@ -211,28 +211,46 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     }
   }
 
+  // 处理Tab键缩进
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      const target = e.target as HTMLTextAreaElement
+      const start = target.selectionStart
+      const end = target.selectionEnd
+      
+      // 插入Tab字符
+      const newContent = content.substring(0, start) + '\t' + content.substring(end)
+      setContent(newContent)
+
+      // 恢复光标位置
+      setTimeout(() => {
+        target.selectionStart = target.selectionEnd = start + 1
+      }, 0)
+    }
+  }
+
   // 格式化日期显示
-  const formatDateDisplay = (dateString: string) => {
-    try {
-      if (!dateString) return '无日期';
-      
-      const date = new Date(dateString);
-      
-      // 检查日期是否有效
-      if (isNaN(date.getTime())) {
-        return '无效日期';
-      }
-      
-      const options: Intl.DateTimeFormatOptions = { 
-        weekday: 'long', 
-        year: 'numeric', 
+  const formatDateDisplay = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    if (dateStr === today.toISOString().split('T')[0]) {
+      return '今天'
+    } else if (dateStr === yesterday.toISOString().split('T')[0]) {
+      return '昨天'
+    } else if (dateStr === tomorrow.toISOString().split('T')[0]) {
+      return '明天'
+    } else {
+      return date.toLocaleDateString('zh-CN', { 
         month: 'long', 
-        day: 'numeric'
-      };
-      return new Intl.DateTimeFormat('zh-CN', options).format(date);
-    } catch (error) {
-      console.error('日期格式化错误:', error);
-      return '日期错误';
+        day: 'numeric',
+        weekday: 'short'
+      })
     }
   }
 
@@ -248,33 +266,105 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     )
   }
 
-  if (error && !diary) {
+  if (!diary && !isLoading) {
     return (
-      <div className="min-h-screen py-8 px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-md">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
-          </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-6xl mb-4">😢</div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            找不到日记
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            这篇日记可能已经被删除了
+          </p>
+          <button
+            onClick={() => router.push('/diary')}
+            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+          >
+            返回日记列表
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">编辑日记</h1>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            编辑日记
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">
+            修改你的日记内容
+          </p>
+        </div>
+        <div className="flex space-x-3 mt-4 sm:mt-0">
+          <button 
+            onClick={() => router.back()}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            取消
+          </button>
+          <button 
+            onClick={handleSubmit}
+            disabled={isSaving}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            {isSaving ? '保存中...' : '保存修改'}
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+          <div className="text-sm text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        </div>
+      )}
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="p-6 space-y-6">
           {/* Date Picker */}
-          <div className="mb-6">
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              日期
+          <div>
+            <label htmlFor="edit-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              📅 记录日期
             </label>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* 快捷日期选择按钮 */}
+              {[
+                { label: '今天', offset: 0, emoji: '📆' },
+                { label: '昨天', offset: -1, emoji: '📋' },
+                { label: '前天', offset: -2, emoji: '📄' }
+              ].map(({ label, offset, emoji }) => {
+                const date = new Date()
+                date.setDate(date.getDate() + offset)
+                const dateStr = date.toISOString().split('T')[0]
+                const isSelected = selectedDate === dateStr
+                
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setSelectedDate(dateStr)}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      isSelected
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <span className="mr-1">{emoji}</span>
+                    {label}
+                  </button>
+                )
+              })}
+              
+              {/* 自定义日期选择 */}
               <input
                 type="date"
-                id="date"
+                id="edit-date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
@@ -285,9 +375,9 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                 <span className="font-medium">{formatDateDisplay(selectedDate)}</span>
                 <span className="ml-2 flex items-center">
                   🕘 {diary ? new Date(diary.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '22:00'}
-                    <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">
-                      (保持原有时间)
-                    </span>
+                  <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">
+                    (保持原有时间)
+                  </span>
                 </span>
               </span>
             </div>
@@ -309,7 +399,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
           </div>
 
           {/* Metadata */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 心情
@@ -370,10 +460,14 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="记录你的想法、心情和一天的经历..."
+              placeholder="今天你想记录什么？可以是发生的事情、内心的感受、学到的东西..."
               rows={12}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+              onKeyDown={handleKeyDown}
             />
+            <div className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {content.length} 字
+            </div>
           </div>
 
           {/* Error message */}
@@ -382,17 +476,6 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
               {error}
             </div>
           )}
-
-          {/* Submit Button */}
-          <div className="mt-6">
-            <button
-              onClick={handleSubmit}
-              disabled={isSaving}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSaving ? '保存中...' : '保存修改'}
-            </button>
-          </div>
 
           {/* Tags */}
           <div>
