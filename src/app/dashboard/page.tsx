@@ -299,7 +299,7 @@ export default function DashboardPage() {
               <span className="text-gray-700 dark:text-gray-300 font-medium">搜索日记</span>
             </button>
             <button 
-              onClick={() => router.push('/diary')}
+              onClick={() => router.push('/tags')}
               className="w-full flex items-center justify-start px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer"
             >
               <span className="mr-3 text-xl">🏷️</span>

@@ -1,26 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
-const moodOptions = [
-  { value: "happy", label: "😊 开心" },
-  { value: "excited", label: "🤩 兴奋" },
-  { value: "calm", label: "😌 平静" },
-  { value: "thoughtful", label: "🤔 沉思" },
-  { value: "sad", label: "😢 难过" },
-  { value: "angry", label: "😠 愤怒" },
-];
+// 标签类型
+interface Tag {
+  id: string
+  type: 'tag' | 'mood' | 'weather'
+  value: string
+  label: string | null
+  icon: string | null
+}
 
-const weatherOptions = [
-  { value: "sunny", label: "☀️ 晴天" },
-  { value: "cloudy", label: "☁️ 多云" },
-  { value: "rainy", label: "🌧️ 雨天" },
-  { value: "snowy", label: "❄️ 雪天" },
-  { value: "windy", label: "💨 大风" },
-];
+// 标签分类
+interface TagsData {
+  tags: Tag[]
+  moods: Tag[]
+  weathers: Tag[]
+}
 
 export default function NewDiaryPage() {
+  const { data: session } = useSession()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [tags, setTags] = useState<string[]>([])
@@ -34,6 +35,45 @@ export default function NewDiaryPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  
+  // 用于存储从数据库加载的标签数据
+  const [tagsData, setTagsData] = useState<TagsData>({
+    tags: [],
+    moods: [],
+    weathers: []
+  })
+  const [isLoadingTags, setIsLoadingTags] = useState(true)
+
+  // 加载标签数据
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (!session) return
+      
+      try {
+        setIsLoadingTags(true)
+        const response = await fetch('/api/tags')
+        
+        if (!response.ok) {
+          throw new Error('获取标签失败')
+        }
+
+        const data = await response.json()
+        
+        // 处理标签数据，将默认标签和自定义标签合并
+        setTagsData({
+          tags: [...data.tags.custom],
+          moods: [...data.moods.custom],
+          weathers: [...data.weathers.custom]
+        })
+      } catch (error) {
+        console.error('获取标签数据失败:', error)
+      } finally {
+        setIsLoadingTags(false)
+      }
+    }
+
+    fetchTags()
+  }, [session])
 
   const handleAddTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
@@ -46,14 +86,16 @@ export default function NewDiaryPage() {
   }
 
   const handleToggleSelection = (
-    item: string,
+    item: Tag,
     currentSelection: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
-    if (currentSelection.includes(item)) {
-      setter(currentSelection.filter((i) => i !== item));
+    // 确保使用label，如果为空则使用value
+    const tagLabel = item.label || item.value;
+    if (currentSelection.includes(tagLabel)) {
+      setter(currentSelection.filter((i) => i !== tagLabel));
     } else {
-      setter([...currentSelection, item]);
+      setter([...currentSelection, tagLabel]);
     }
   };
 
@@ -113,6 +155,18 @@ export default function NewDiaryPage() {
     }
   }
 
+  // 格式化日期显示
+  const formatDateDisplay = (dateString: string) => {
+    const date = new Date(dateString)
+    const options: Intl.DateTimeFormatOptions = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric'
+    }
+    return new Intl.DateTimeFormat('zh-CN', options).format(date)
+  }
+
   // 处理Tab键缩进
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Tab') {
@@ -132,105 +186,18 @@ export default function NewDiaryPage() {
     }
   }
 
-  // 格式化日期显示
-  const formatDateDisplay = (dateStr: string) => {
-    const date = new Date(dateStr)
-    const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-
-    if (dateStr === today.toISOString().split('T')[0]) {
-      return '今天'
-    } else if (dateStr === yesterday.toISOString().split('T')[0]) {
-      return '昨天'
-    } else if (dateStr === tomorrow.toISOString().split('T')[0]) {
-      return '明天'
-    } else {
-      return date.toLocaleDateString('zh-CN', { 
-        month: 'long', 
-        day: 'numeric',
-        weekday: 'short'
-      })
-    }
-  }
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            写新日记
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
-            记录今天的美好时光
-          </p>
-        </div>
-        <div className="flex space-x-3 mt-4 sm:mt-0">
-          <button 
-            onClick={() => router.back()}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-          >
-            取消
-          </button>
-          <button 
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            {isLoading ? '发布中...' : '发布日记'}
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
-          <div className="text-sm text-red-600 dark:text-red-400">
-            {error}
-          </div>
-        </div>
-      )}
-
-      {/* Main Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="p-6 space-y-6">
-          {/* Date Selection */}
-          <div>
+    <div className="min-h-screen py-8 px-4">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">写日记</h1>
+        
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700">
+          {/* Date Picker */}
+          <div className="mb-6">
             <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              📅 记录日期
+              日期
             </label>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* 快捷日期选择按钮 */}
-              {[
-                { label: '今天', offset: 0, emoji: '📆' },
-                { label: '昨天', offset: -1, emoji: '📋' },
-                { label: '前天', offset: -2, emoji: '📄' }
-              ].map(({ label, offset, emoji }) => {
-                const date = new Date()
-                date.setDate(date.getDate() + offset)
-                const dateStr = date.toISOString().split('T')[0]
-                const isSelected = selectedDate === dateStr
-                
-                return (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => setSelectedDate(dateStr)}
-                    className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      isSelected
-                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    <span className="mr-1">{emoji}</span>
-                    {label}
-                  </button>
-                )
-              })}
-              
-              {/* 自定义日期选择 */}
+            <div className="flex items-center space-x-4">
               <input
                 type="date"
                 id="date"
@@ -272,54 +239,60 @@ export default function NewDiaryPage() {
           </div>
 
           {/* Metadata */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="mood" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 心情
               </label>
               <div className="flex flex-wrap gap-2">
-                {moodOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handleToggleSelection(option.value, mood, setMood)}
-                    className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      mood.includes(option.value)
-                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                {isLoadingTags ? (
+                  <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
+                ) : (
+                  tagsData.moods.map((moodOption) => (
+                    <button
+                      key={moodOption.id}
+                      onClick={() => handleToggleSelection(moodOption, mood, setMood)}
+                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                        mood.includes(moodOption.label || moodOption.value)
+                          ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
+                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      {moodOption.icon} {moodOption.label || moodOption.value}
+                    </button>
+                  ))
+                )}
               </div>
             </div>
             
             <div>
-              <label htmlFor="weather" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 天气
               </label>
               <div className="flex flex-wrap gap-2">
-                {weatherOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handleToggleSelection(option.value, weather, setWeather)}
-                    className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      weather.includes(option.value)
-                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-600'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                {isLoadingTags ? (
+                  <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
+                ) : (
+                  tagsData.weathers.map((weatherOption) => (
+                    <button
+                      key={weatherOption.id}
+                      onClick={() => handleToggleSelection(weatherOption, weather, setWeather)}
+                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                        weather.includes(weatherOption.label || weatherOption.value)
+                          ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
+                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      {weatherOption.icon} {weatherOption.label || weatherOption.value}
+                    </button>
+                  ))
+                )}
               </div>
             </div>
           </div>
 
           {/* Content */}
-          <div>
+          <div className="mt-6">
             <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               内容
             </label>
@@ -327,19 +300,34 @@ export default function NewDiaryPage() {
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              placeholder="记录你的想法、心情和一天的经历..."
               rows={12}
-              placeholder="今天你想记录什么？可以是发生的事情、内心的感受、学到的东西..."
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
               onKeyDown={handleKeyDown}
             />
-            <div className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {content.length} 字
+          </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="mt-4 text-red-500 dark:text-red-400 text-sm">
+              {error}
             </div>
+          )}
+
+          {/* Submit Button */}
+          <div className="mt-6">
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? '保存中...' : '保存日记'}
+            </button>
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 mt-6">
               标签
             </label>
             <div className="flex flex-wrap gap-2 mb-3">
@@ -359,20 +347,24 @@ export default function NewDiaryPage() {
               ))}
             </div>
             <div className="flex flex-wrap gap-2">
-              {['生活', '工作', '学习', '旅行', '美食', '运动', '读书', '电影'].map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => handleAddTag(tag)}
-                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                    tags.includes(tag)
-                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                  disabled={tags.includes(tag)}
-                >
-                  {tag}
-                </button>
-              ))}
+              {isLoadingTags ? (
+                <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
+              ) : (
+                tagsData.tags.map((tagOption) => (
+                  <button
+                    key={tagOption.id}
+                    onClick={() => handleAddTag(tagOption.value)}
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      tags.includes(tagOption.value)
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                    disabled={tags.includes(tagOption.value)}
+                  >
+                    {tagOption.value}
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>

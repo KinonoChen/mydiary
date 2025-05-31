@@ -98,8 +98,8 @@ export async function GET(request: NextRequest) {
             title: 'Test Diary Entry',
             content: 'This is a test diary entry created for API testing.',
             tags: JSON.stringify(['test', 'api', 'demo']),
-            mood: 'happy',
-            weather: 'sunny',
+            mood: '开心',
+            weather: '晴天',
             userId: testUser.id
           }
         })

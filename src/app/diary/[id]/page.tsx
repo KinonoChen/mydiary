@@ -5,6 +5,15 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { formatDate, formatFullDateTime } from '@/lib/utils'
 
+// 标签类型
+interface Tag {
+  id: string
+  type: 'tag' | 'mood' | 'weather'
+  value: string
+  label: string | null
+  icon: string | null
+}
+
 interface Diary {
   id: string
   title: string
@@ -16,44 +25,6 @@ interface Diary {
   updatedAt: string
 }
 
-// 天气图标映射
-const weatherIcons: Record<string, string> = {
-  sunny: '☀️',
-  cloudy: '☁️',
-  rainy: '🌧️',
-  snowy: '❄️',
-  windy: '💨'
-}
-
-// 心情图标映射
-const moodIcons: Record<string, string> = {
-  happy: '😊',
-  excited: '🤩',
-  calm: '😌',
-  thoughtful: '🤔',
-  sad: '😢',
-  angry: '😠'
-}
-
-// 天气文字映射
-const weatherText: Record<string, string> = {
-  sunny: '晴天',
-  cloudy: '多云',
-  rainy: '雨天',
-  snowy: '雪天',
-  windy: '大风'
-}
-
-// 心情文字映射
-const moodText: Record<string, string> = {
-  happy: '开心',
-  excited: '兴奋',
-  calm: '平静',
-  thoughtful: '沉思',
-  sad: '难过',
-  angry: '愤怒'
-}
-
 export default function DiaryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const [diary, setDiary] = useState<Diary | null>(null)
@@ -61,6 +32,66 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const { data: session } = useSession()
+  
+  // 用户标签
+  const [userMoods, setUserMoods] = useState<Tag[]>([])
+  const [userWeathers, setUserWeathers] = useState<Tag[]>([])
+  const [isLoadingTags, setIsLoadingTags] = useState(true)
+
+  // 加载用户标签
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (!session) return
+      
+      try {
+        setIsLoadingTags(true)
+        const response = await fetch('/api/tags')
+        
+        if (!response.ok) {
+          throw new Error('获取标签失败')
+        }
+
+        const data = await response.json()
+        
+        // 获取心情和天气标签
+        setUserMoods(data.moods.custom)
+        setUserWeathers(data.weathers.custom)
+      } catch (error) {
+        console.error('获取标签数据失败:', error)
+      } finally {
+        setIsLoadingTags(false)
+      }
+    }
+
+    fetchTags()
+  }, [session])
+
+  // 获取标签显示
+  const getTagDisplay = (value: string, type: 'mood' | 'weather'): { text: string, icon: string } => {
+    if (type === 'mood') {
+      // 查找自定义心情
+      const customMood = userMoods.find(m => m.value === value || m.label === value)
+      if (customMood) {
+        return { 
+          text: customMood.label || customMood.value,
+          icon: customMood.icon || '😐' 
+        }
+      }
+      // 未找到则直接返回值
+      return { text: value, icon: '😐' }
+    } else {
+      // 查找自定义天气
+      const customWeather = userWeathers.find(w => w.value === value || w.label === value)
+      if (customWeather) {
+        return { 
+          text: customWeather.label || customWeather.value,
+          icon: customWeather.icon || '🌤️' 
+        }
+      }
+      // 未找到则直接返回值
+      return { text: value, icon: '🌤️' }
+    }
+  }
 
   useEffect(() => {
     if (session) {
@@ -192,24 +223,30 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
             </span>
             
             {diary.weather && diary.weather.length > 0 && (
-              <span className="flex items-center gap-1" title={diary.weather.map(w => weatherText[w]).join(', ')}>
-                {diary.weather.map(w => (
-                  <span key={w} className="flex items-center gap-1 mr-2">
-                    {weatherIcons[w]}
-                    {weatherText[w]}
-                  </span>
-                ))}
+              <span className="flex items-center gap-1" title={diary.weather.map(w => getTagDisplay(w, 'weather').text).join(', ')}>
+                {diary.weather.map(w => {
+                  const weather = getTagDisplay(w, 'weather');
+                  return (
+                    <span key={w} className="flex items-center gap-1 mr-2">
+                      {weather.icon}
+                      {weather.text}
+                    </span>
+                  );
+                })}
               </span>
             )}
             
             {diary.mood && diary.mood.length > 0 && (
-              <span className="flex items-center gap-1" title={diary.mood.map(m => moodText[m]).join(', ')}>
-                {diary.mood.map(m => (
-                  <span key={m} className="flex items-center gap-1 mr-2">
-                    {moodIcons[m]}
-                    {moodText[m]}
-                  </span>
-                ))}
+              <span className="flex items-center gap-1" title={diary.mood.map(m => getTagDisplay(m, 'mood').text).join(', ')}>
+                {diary.mood.map(m => {
+                  const mood = getTagDisplay(m, 'mood');
+                  return (
+                    <span key={m} className="flex items-center gap-1 mr-2">
+                      {mood.icon}
+                      {mood.text}
+                    </span>
+                  );
+                })}
               </span>
             )}
             

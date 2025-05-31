@@ -265,7 +265,7 @@ interface Diary {
 }
 ```
 
-### 支持的心情类型
+### 预设的心情类型
 
 - `happy` - 开心
 - `sad` - 难过
@@ -276,7 +276,7 @@ interface Diary {
 - `grateful` - 感恩
 - `frustrated` - 沮丧
 
-### 支持的天气类型
+### 预设的天气类型
 
 - `sunny` - 晴天
 - `cloudy` - 多云
