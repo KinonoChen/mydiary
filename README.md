@@ -45,17 +45,19 @@ npm install
 yarn install
 # 或
 pnpm install
+# 生成 Prisma 客户端
+pnpm prisma generate
 ```
 
 3. 环境配置
-复制 `.env.example` 文件为 `.env.local` 并填写必要的环境变量：
+复制 `.env.example` 文件为 `.env` 并填写必要的环境变量：
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
 必需的环境变量：
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="file:/path/to/dev.db"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-secret-key"
 ```
