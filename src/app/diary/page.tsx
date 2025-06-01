@@ -133,6 +133,11 @@ export default function DiaryPage() {
     }
   }
 
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.pages) {
+      setPagination(prev => ({ ...prev, page: newPage }))
+    }
+  }
   // 格式化日期显示
   // const formatRelativeTime = (dateStr: string) => {
   //   const date = new Date(dateStr)
@@ -306,24 +311,34 @@ export default function DiaryPage() {
               />
             ))}
             
-            {/* 分页 */}
-            {pagination.pages > 1 && (
-              <div className="flex justify-center pt-4">
+            {/* Pagination */}
+            {!isLoading && diaries.length > 0 && (
+              <div className="flex justify-center">
                 <div className="flex space-x-2">
-                  <button
-                    onClick={() => setPagination(prev => ({ ...prev, page: Math.max(prev.page - 1, 1) }))}
+                  <button 
+                    onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
-                    className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     上一页
                   </button>
-                  <span className="px-3 py-1 text-gray-700 dark:text-gray-300">
-                    {pagination.page} / {pagination.pages}
-                  </span>
-                  <button
-                    onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.page + 1, prev.pages) }))}
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-2 text-sm rounded-md ${
+                        page === pagination.page
+                          ? 'bg-blue-600 text-white'
+                          : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button 
+                    onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.pages}
-                    className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     下一页
                   </button>
