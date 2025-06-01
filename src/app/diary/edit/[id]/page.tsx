@@ -174,20 +174,24 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
     setError('')
 
     try {
-      // 构建完整的日期时间
-      let selectedDateTime
-      const today = getLocalDateString()
+      // 构建完整的日期时间（选择的日期 + 原有的时间）
+      const originalDate = new Date(diary?.createdAt || '')
+      const selectedDateTime = new Date(`${selectedDate}T${originalDate.toTimeString().split(' ')[0]}`)
+      // // 构建完整的日期时间
+      // let selectedDateTime
+      // const today = getLocalDateString()
       
-      if (selectedDate === today) {
-        // 如果选择的是今天，使用当前时间
-        selectedDateTime = new Date()
-      } else {
-        // 如果选择的是其他日期，使用22:00:00
-        const [year, month, day] = selectedDate.split('-').map(Number)
-        // 注意月份从0开始
-        selectedDateTime = new Date(year, month - 1, day, 22, 0, 0)
-      }
-      
+      // if (selectedDate === today) {
+      //   // 如果选择的是今天，使用当前时间
+      //   //selectedDateTime = new Date()
+      //   // 保持原有时间
+      //   selectedDateTime = new Date(diary?.createdAt)
+      // } else {
+      //   // 如果选择的是其他日期，使用22:00:00
+      //   const [year, month, day] = selectedDate.split('-').map(Number)
+      //   // 注意月份从0开始
+      //   selectedDateTime = new Date(year, month - 1, day, 22, 0, 0)
+      // }
       // 只去除末尾的空白字符，保留开头的缩进
       const trimmedContent = content.replace(/\s+$/, '')
       
