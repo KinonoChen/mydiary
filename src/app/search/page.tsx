@@ -16,6 +16,29 @@ interface SearchResult {
   highlightedContent?: string
 }
 
+interface UserTag {
+  id: string
+  type: string
+  value: string
+  label: string | null
+  icon: string | null
+}
+
+interface TagsData {
+  tags: {
+    default: UserTag[]
+    custom: UserTag[]
+  }
+  moods: {
+    default: UserTag[]
+    custom: UserTag[]
+  }
+  weathers: {
+    default: UserTag[]
+    custom: UserTag[]
+  }
+}
+
 interface SearchResponse {
   data: SearchResult[]
   pagination: {
@@ -39,12 +62,38 @@ interface SearchResponse {
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [selectedMood, setSelectedMood] = useState('')
+  const [selectedWeather, setSelectedWeather] = useState('')
   const [dateRange, setDateRange] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [totalResults, setTotalResults] = useState(0)
+  const [tagsData, setTagsData] = useState<TagsData | null>(null)
+  const [tagsLoading, setTagsLoading] = useState(true)
   const router = useRouter()
+
+  // 获取用户标签数据
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        setTagsLoading(true)
+        const response = await fetch('/api/tags')
+        if (response.ok) {
+          const data = await response.json()
+          setTagsData(data)
+        } else {
+          console.error('获取标签失败')
+        }
+      } catch (error) {
+        console.error('获取标签失败:', error)
+      } finally {
+        setTagsLoading(false)
+      }
+    }
+
+    fetchTags()
+  }, [])
 
   const handleTagToggle = (tag: string) => {
     setSelectedTags(prev => 
@@ -94,7 +143,7 @@ export default function SearchPage() {
     const dateRangeResult = getDateRange();
     const isDateRangeSelected = dateRangeResult !== undefined;
 
-    if (!searchQuery.trim() && selectedTags.length === 0 && !isDateRangeSelected) {
+    if (!searchQuery.trim() && selectedTags.length === 0 && !selectedMood && !selectedWeather && !isDateRangeSelected) {
       setError('请输入搜索内容或选择筛选条件');
       return;
     }
@@ -111,6 +160,8 @@ export default function SearchPage() {
         body: JSON.stringify({
           query: searchQuery.trim(),
           tags: selectedTags,
+          mood: selectedMood || null,
+          weather: selectedWeather || null,
           dateFrom: isDateRangeSelected ? dateRangeResult.from : null,
           dateTo: isDateRangeSelected ? dateRangeResult.to : null,
           page: 1,
@@ -143,7 +194,7 @@ export default function SearchPage() {
       const dateRangeResult = getDateRange();
       const isDateRangeSelected = dateRangeResult !== undefined;
 
-      if (isDateRangeSelected && (searchQuery.trim() || selectedTags.length > 0)) {
+      if (isDateRangeSelected && (searchQuery.trim() || selectedTags.length > 0 || selectedMood || selectedWeather)) {
         handleSearch();
       } else {
         // 清空搜索结果时不显示loading状态，避免闪烁
@@ -155,7 +206,7 @@ export default function SearchPage() {
     }, 500);
 
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery, selectedTags, dateRange]);
+  }, [searchQuery, selectedTags, selectedMood, selectedWeather, dateRange]);
 
   return (
     <div className="space-y-6">
@@ -198,21 +249,33 @@ export default function SearchPage() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               标签筛选
             </label>
-            <div className="flex flex-wrap gap-2">
-              {['生活', '工作', '学习', '旅行', '美食', '运动', '读书', '电影'].map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => handleTagToggle(tag)}
-                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                    selectedTags.includes(tag)
-                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
+            {tagsLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">加载标签中...</span>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {tagsData && [...tagsData.tags.custom].map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => handleTagToggle(tag.value)}
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      selectedTags.includes(tag.value)
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {tag.label || tag.value}
+                  </button>
+                ))}
+                {(!tagsData || tagsData.tags.custom.length === 0) && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    暂无可用标签，请先在<span className="text-blue-600 dark:text-blue-400">标签管理</span>中添加标签
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Date Range Filter */}
