@@ -299,7 +299,7 @@ export default function DiaryPage() {
                 写第一篇日记
               </button>
             </div>
-          //</div>
+          </div>
         ) : (
           <div className="space-y-6">
             {diaries.map((diary) => (

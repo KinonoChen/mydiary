@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('tag') || ''
     const mood = searchParams.get('mood') || ''
     const weather = searchParams.get('weather') || ''
+    const sortBy = searchParams.get('sortBy') || 'newest'
 
     // 查找用户
     const user = await prisma.user.findUnique({
@@ -65,13 +66,30 @@ export async function GET(request: NextRequest) {
       where.weather = weather
     }
 
+    // 处理排序逻辑
+    let orderBy: any = { createdAt: 'desc' } // 默认排序
+
+    switch (sortBy) {
+      case 'newest':
+        orderBy = { createdAt: 'desc' }
+        break
+      case 'oldest':
+        orderBy = { createdAt: 'asc' }
+        break
+      case 'updated':
+        orderBy = { updatedAt: 'desc' }
+        break
+      default:
+        orderBy = { createdAt: 'desc' }
+    }
+
     // 获取总数
     const total = await prisma.diary.count({ where })
 
     // 获取分页数据
     const diaries = await prisma.diary.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       skip: (page - 1) * limit,
       take: limit,
       select: {
