@@ -43,7 +43,7 @@ export default function TimelineNavigation({
   const years = getAvailableYears()
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 lg:z-20">
       <div className="px-4 py-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           {/* 左侧：标题和统计 */}

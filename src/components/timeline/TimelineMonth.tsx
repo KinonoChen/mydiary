@@ -49,8 +49,8 @@ export default function TimelineMonth({
   return (
     <div className="relative">
       {/* 月份标题 */}
-      <div 
-        className="sticky top-0 z-20 bg-gray-100 dark:bg-gray-700 px-4 py-3 mb-4 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+      <div
+        className="sticky top-0 z-0 lg:z-10 bg-gray-100 dark:bg-gray-700 px-4 py-3 mb-4 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center justify-between">
