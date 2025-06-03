@@ -291,14 +291,21 @@ export default function DashboardPage() {
               <span className="mr-3 text-xl">✍️</span>
               <span className="text-blue-700 dark:text-blue-300 font-medium">写新日记</span>
             </button>
-            <button 
+            <button
+              onClick={() => router.push('/timeline')}
+              className="w-full flex items-center justify-start px-4 py-3 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-colors cursor-pointer"
+            >
+              <span className="mr-3 text-xl">📅</span>
+              <span className="text-orange-700 dark:text-orange-300 font-medium">时间主线</span>
+            </button>
+            <button
               onClick={() => router.push('/search')}
               className="w-full flex items-center justify-start px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer"
             >
               <span className="mr-3 text-xl">🔍</span>
               <span className="text-gray-700 dark:text-gray-300 font-medium">搜索日记</span>
             </button>
-            <button 
+            <button
               onClick={() => router.push('/tags')}
               className="w-full flex items-center justify-start px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer"
             >

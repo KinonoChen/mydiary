@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import DiaryCard from '@/components/diary/DiaryCard'
+import TimelineContainer from '@/components/timeline/TimelineContainer'
 import { formatDateTime, formatRelativeTime } from '@/lib/utils'
 
 // 标签类型
@@ -47,6 +48,7 @@ export default function DiaryPage() {
   const [error, setError] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [selectedTag, setSelectedTag] = useState('')
+  const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list')
   const router = useRouter()
   
   // 用户标签
@@ -227,8 +229,32 @@ export default function DiaryPage() {
               共 {pagination.total} 篇日记
             </p>
           </div>
-          <div className="mt-4 sm:mt-0">
-            <Link 
+          <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+            {/* 视图切换按钮 */}
+            <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                📋 列表
+              </button>
+              <button
+                onClick={() => setViewMode('timeline')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  viewMode === 'timeline'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                📅 时间线
+              </button>
+            </div>
+
+            <Link
               href="/diary/new"
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
             >
@@ -300,10 +326,10 @@ export default function DiaryPage() {
               </button>
             </div>
           </div>
-        ) : (
+        ) : viewMode === 'list' ? (
           <div className="space-y-6">
             {diaries.map((diary) => (
-              <DiaryCard 
+              <DiaryCard
                 key={diary.id}
                 diary={diary}
                 onEdit={() => handleEdit(diary.id)}
@@ -313,12 +339,12 @@ export default function DiaryPage() {
                 getTagDisplay={getTagDisplay}
               />
             ))}
-            
+
             {/* Pagination */}
             {!isLoading && diaries.length > 0 && (
               <div className="flex justify-center">
                 <div className="flex space-x-2">
-                  <button 
+                  <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
                     className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -338,7 +364,7 @@ export default function DiaryPage() {
                       {page}
                     </button>
                   ))}
-                  <button 
+                  <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.pages}
                     className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -349,6 +375,14 @@ export default function DiaryPage() {
               </div>
             )}
           </div>
+        ) : (
+          /* 时间主线视图 */
+          <TimelineContainer
+            diaries={diaries}
+            getTagDisplay={getTagDisplay}
+            showPreview={false}
+            isLoading={isLoading}
+          />
         )}
       </div>
     </div>

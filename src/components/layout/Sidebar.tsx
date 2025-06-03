@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 const navigation = [
   { name: '仪表板', href: '/dashboard', icon: '📊' },
   { name: '所有日记', href: '/diary', icon: '📖' },
+  { name: '时间主线', href: '/timeline', icon: '📅' },
   { name: '写日记', href: '/diary/new', icon: '✍️' },
   { name: '搜索', href: '/search', icon: '🔍' },
   { name: '标签', href: '/tags', icon: '🏷️' },
