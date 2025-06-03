@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import TimezoneSettings from '@/components/settings/TimezoneSettings'
+import DeleteAccountSection from '@/components/settings/DeleteAccountSection'
 
 export default function SettingsPage() {
   const { data: session } = useSession()
@@ -31,7 +32,7 @@ export default function SettingsPage() {
         {/* 时区设置 */}
         <TimezoneSettings />
 
-        {/* 其他设置可以在这里添加 */}
+        {/* 账户信息 */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             账户信息
@@ -55,6 +56,9 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* 账号注销 */}
+        <DeleteAccountSection userEmail={session.user?.email || ''} />
       </div>
     </div>
   )
