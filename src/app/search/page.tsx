@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Loading, { ListSkeleton } from '@/components/ui/Loading'
+import { debounce } from '@/lib/utils'
 
 interface SearchResult {
   id: string
@@ -209,36 +211,48 @@ export default function SearchPage() {
   }, [searchQuery, selectedTags, selectedMood, selectedWeather, dateRange]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          搜索日记
+      <div className="animate-slide-in-up">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          🔍 搜索日记
         </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-1">
-          找到你想要的回忆
+        <p className="text-lg text-gray-600 dark:text-gray-300">
+          在时光的长河中找到你想要的回忆
         </p>
       </div>
 
       {/* Search Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover-lift transition-all-smooth animate-slide-in-up" style={{ animationDelay: '0.1s' }}>
         {/* Main Search */}
-        <div className="mb-6">
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            搜索内容
+        <div className="mb-8">
+          <label htmlFor="search" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            🔍 搜索内容
           </label>
-          <div className="relative">
+          <div className="relative group">
             <input
               type="text"
               id="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜索日记标题、内容..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              className="w-full pl-12 pr-4 py-4 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all-smooth text-lg"
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-400 text-xl">🔍</span>
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
@@ -331,46 +345,67 @@ export default function SearchPage() {
         </div>
         
         {/* 为搜索结果区域设置最小高度，避免布局跳动 */}
-        <div className="p-6 min-h-[400px]">
+        <div className="p-8 min-h-[400px]">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-3 text-gray-600 dark:text-gray-400">搜索中...</span>
+            <div className="space-y-6">
+              <Loading text="正在搜索中..." size="lg" />
+              <ListSkeleton count={3} />
             </div>
           ) : (
             <div className="space-y-6">
-              {searchResults.map((result) => (
-                <div 
+              {searchResults.map((result, index) => (
+                <div
                   key={result.id}
                   onClick={() => router.push(`/diary/${result.id}`)}
-                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-4 rounded-lg transition-colors"
+                  className="group cursor-pointer bg-white dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-blue-900/10 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all-smooth hover-lift animate-slide-in-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <h3 
-                    className="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-                    dangerouslySetInnerHTML={{ __html: result.highlightedTitle || result.title }}
-                  />
-                  <p 
-                    className="text-gray-600 dark:text-gray-400 mb-3"
+                  <div className="flex items-start justify-between mb-3">
+                    <h3
+                      className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+                      dangerouslySetInnerHTML={{ __html: result.highlightedTitle || result.title }}
+                    />
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 ml-4">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {new Date(result.createdAt).toLocaleString('zh-CN', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                  </div>
+
+                  <p
+                    className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: result.highlightedContent || result.content }}
                   />
-                  <div className="flex flex-wrap gap-2">
-                    {result.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(result.createdAt).toLocaleString('zh-CN', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-2">
+                      {result.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                      {result.tags.length > 3 && (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                          +{result.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      约 {result.content.length} 字
+                    </div>
                   </div>
                 </div>
               ))}

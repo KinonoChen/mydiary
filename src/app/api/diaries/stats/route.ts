@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
     const recentDiaries = await prisma.diary.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
-      take: 60, // 取更多数据以确保准确性
+      take: 100, // 取更多数据以确保准确性
       select: {
         createdAt: true
       }
@@ -150,21 +150,41 @@ export async function GET(request: NextRequest) {
     if (recentDiaries.length > 0) {
       const today = getChinaTime()
       today.setHours(0, 0, 0, 0) // 设为当天00:00:00
-      
-      // 将所有日记的创建时间转换为中国时区的日期字符串
+
+      // 将所有日记的创建时间转换为中国时区的日期字符串并排序
       const dates = recentDiaries.map(d => formatChinaDate(d.createdAt))
-      const uniqueDates = [...new Set(dates)]
-      
-      // 检查连续天数
-      for (let i = 0; i < uniqueDates.length; i++) {
-        const checkDate = new Date(today)
-        checkDate.setDate(checkDate.getDate() - i)
-        const checkDateStr = checkDate.toISOString().split('T')[0]
-        
-        if (uniqueDates.includes(checkDateStr)) {
-          streakDays++
+      const uniqueDates = [...new Set(dates)].sort((a, b) => b.localeCompare(a)) // 降序排列
+
+      if (uniqueDates.length > 0) {
+        // 获取最近有日记的日期
+        const latestDiaryDate = uniqueDates[0]
+        const latestDate = new Date(latestDiaryDate)
+
+        // 检查最近的日记是否是今天或昨天（允许1天的容错）
+        const todayStr = today.toISOString().split('T')[0]
+        const yesterday = new Date(today)
+        yesterday.setDate(yesterday.getDate() - 1)
+        const yesterdayStr = yesterday.toISOString().split('T')[0]
+
+        // 如果最近的日记不是今天或昨天，连续天数为0
+        if (latestDiaryDate !== todayStr && latestDiaryDate !== yesterdayStr) {
+          streakDays = 0
         } else {
-          break
+          // 从最近有日记的日期开始往前计算连续天数
+          let currentCheckDate = new Date(latestDate)
+
+          for (const dateStr of uniqueDates) {
+            const checkDateStr = currentCheckDate.toISOString().split('T')[0]
+
+            if (dateStr === checkDateStr) {
+              streakDays++
+              // 往前推一天
+              currentCheckDate.setDate(currentCheckDate.getDate() - 1)
+            } else {
+              // 如果当前检查的日期没有日记，结束连续计算
+              break
+            }
+          }
         }
       }
     }
