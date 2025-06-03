@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { formatDate, formatFullDateTime } from '@/lib/utils'
+import { formatDateTime, formatFullDateTime } from '@/lib/utils'
 
 // 标签类型
 interface Tag {
@@ -147,16 +147,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+
 
   if (loading) {
     return (
@@ -219,7 +210,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
           
           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <span>
-              {formatDate(diary.createdAt)}
+              {formatDateTime(diary.createdAt)}
             </span>
             
             {diary.weather && diary.weather.length > 0 && (

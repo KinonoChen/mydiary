@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { formatDate } from '@/lib/utils'
+import { getLocalDateString, formatDateDisplay } from '@/lib/utils'
 // 标签类型
 interface Tag {
   id: string
@@ -20,13 +20,7 @@ interface TagsData {
   weathers: Tag[]
 }
 
-// 获取本地时区的日期字符串(YYYY-MM-DD)
-function getLocalDateString(date: Date = new Date()): string {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+
 
 export default function NewDiaryPage() {
   const { data: session } = useSession()
@@ -164,34 +158,7 @@ export default function NewDiaryPage() {
     }
   }
 
-  // 格式化日期显示
-  const formatDateDisplay = (dateStr: string) => {
-    const date = new Date(dateStr)
-    const today = getLocalDateString()
-    
-    // 计算昨天和明天的日期字符串，使用本地时区
-    const yesterdayDate = new Date()
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1)
-    const yesterday = getLocalDateString(yesterdayDate)
-    
-    const tomorrowDate = new Date()
-    tomorrowDate.setDate(tomorrowDate.getDate() + 1)
-    const tomorrow = getLocalDateString(tomorrowDate)
 
-    if (dateStr === today) {
-      return '今天'
-    } else if (dateStr === yesterday) {
-      return '昨天'
-    } else if (dateStr === tomorrow) {
-      return '明天'
-    } else {
-      return date.toLocaleDateString('zh-CN', { 
-        month: 'long', 
-        day: 'numeric',
-        weekday: 'short'
-      })
-    }
-  }
 
   // 处理Tab键缩进
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
