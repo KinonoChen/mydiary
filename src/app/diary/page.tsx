@@ -288,15 +288,18 @@ export default function DiaryPage() {
             <p className="text-gray-500 dark:text-gray-400">加载中...</p>
           </div>
         ) : diaries.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-gray-500 dark:text-gray-400 mb-4">还没有日记</p>
-            <Link 
-              href="/diary/new"
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-            >
-              写第一篇日记
-            </Link>
-          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="text-center py-8">
+              <span className="text-4xl mb-4 block">📝</span>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">还没有日记</p>
+              <button 
+                onClick={() => router.push('/diary/new')}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
+              >
+                写第一篇日记
+              </button>
+            </div>
+          //</div>
         ) : (
           <div className="space-y-6">
             {diaries.map((diary) => (
