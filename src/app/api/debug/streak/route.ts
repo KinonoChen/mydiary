@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getChinaTime, formatChinaDate } from '@/lib/timezone'
+import { getTimezoneTime, formatTimezoneDate } from '@/lib/timezone-server'
 
 // 调试连续天数计算的API
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // 获取用户时区参数，默认使用UTC
+    const { searchParams } = new URL(request.url)
+    const userTimezone = searchParams.get('timezone') || 'UTC'
 
     // 查找用户
     const user = await prisma.user.findUnique({
@@ -33,19 +37,19 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 转换为中国时区的日期
-    const diariesWithChinaDate = allDiaries.map(diary => ({
+    // 转换为用户时区的日期
+    const diariesWithUserDate = allDiaries.map(diary => ({
       id: diary.id,
       title: diary.title,
       createdAt: diary.createdAt,
-      chinaDate: formatChinaDate(diary.createdAt),
-      chinaDateTime: new Date(diary.createdAt.getTime() + 8 * 60 * 60 * 1000).toLocaleString('zh-CN')
+      userDate: formatTimezoneDate(diary.createdAt, userTimezone),
+      userDateTime: new Date(diary.createdAt.toLocaleString("en-US", { timeZone: userTimezone })).toLocaleString('zh-CN')
     }))
 
     // 按日期分组
-    const dateGroups: { [key: string]: typeof diariesWithChinaDate } = {}
-    diariesWithChinaDate.forEach(diary => {
-      const date = diary.chinaDate
+    const dateGroups: { [key: string]: typeof diariesWithUserDate } = {}
+    diariesWithUserDate.forEach(diary => {
+      const date = diary.userDate
       if (!dateGroups[date]) {
         dateGroups[date] = []
       }
@@ -53,12 +57,12 @@ export async function GET(request: NextRequest) {
     })
 
     // 获取唯一日期并排序
-    const uniqueDates = [...new Set(diariesWithChinaDate.map(d => d.chinaDate))]
+    const uniqueDates = [...new Set(diariesWithUserDate.map(d => d.userDate))]
       .sort((a, b) => b.localeCompare(a)) // 降序排列
 
     // 计算连续天数（复制原逻辑）
     let streakDays = 0
-    const today = getChinaTime()
+    const today = getTimezoneTime(userTimezone)
     today.setHours(0, 0, 0, 0)
     
     const todayStr = today.toISOString().split('T')[0]
@@ -136,10 +140,10 @@ export async function GET(request: NextRequest) {
         diaries: diaries.map(d => ({
           id: d.id,
           title: d.title,
-          chinaDateTime: d.chinaDateTime
+          userDateTime: d.userDateTime
         }))
       })).sort((a, b) => b.date.localeCompare(a.date)),
-      diariesWithChinaDate: diariesWithChinaDate.slice(0, 10) // 只返回前10条用于调试
+      diariesWithUserDate: diariesWithUserDate.slice(0, 10) // 只返回前10条用于调试
     })
 
   } catch (error) {

@@ -1,15 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
-  COMMON_TIMEZONES, 
-  getCurrentTimezone, 
-  saveUserTimezone, 
-  getAutoDetectTimezone, 
+import {
+  COMMON_TIMEZONES,
+  getCurrentTimezone,
+  saveUserTimezone,
+  getAutoDetectTimezone,
   setAutoDetectTimezone,
   getBrowserTimezone,
   getTimezoneDisplayName
-} from '@/lib/timezone'
+} from '@/lib/timezone-client'
 
 export default function TimezoneSettings() {
   const [currentTimezone, setCurrentTimezone] = useState('')

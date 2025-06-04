@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { formatDate, formatRelativeTime } from '@/lib/utils'
+import { getCurrentTimezone } from '@/lib/timezone-client'
 
 interface DiaryStats {
   total: number
@@ -50,7 +51,9 @@ export default function DashboardPage() {
   // 获取统计数据
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/diaries/stats')
+      // 获取用户时区并传递给API
+      const userTimezone = getCurrentTimezone()
+      const response = await fetch(`/api/diaries/stats?timezone=${encodeURIComponent(userTimezone)}`)
       if (!response.ok) {
         throw new Error('Failed to fetch stats')
       }

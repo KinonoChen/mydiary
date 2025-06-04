@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import TimelineMonth from './TimelineMonth'
+import { getCurrentTimezone, formatTimezoneYearMonth } from '@/lib/timezone-client'
 
 interface Diary {
   id: string
@@ -32,14 +33,14 @@ export default function TimelineContainer({
   hasMore = false
 }: TimelineContainerProps) {
   
-  // 按月分组数据
+  // 按月分组数据（使用用户时区）
   const groupedDiaries = useMemo(() => {
     const groups: { [key: string]: Diary[] } = {}
-    
+    const userTimezone = getCurrentTimezone()
+
     diaries.forEach(diary => {
-      const date = new Date(diary.createdAt)
-      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-      
+      const yearMonth = formatTimezoneYearMonth(new Date(diary.createdAt), userTimezone)
+
       if (!groups[yearMonth]) {
         groups[yearMonth] = []
       }

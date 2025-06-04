@@ -2,39 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-
-// 获取中国时区的当前时间
-function getChinaTime() {
-  return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Shanghai"}))
-}
-
-// 获取中国时区的某个日期
-function getChinaDate(date: Date) {
-  return new Date(date.toLocaleString("en-US", {timeZone: "Asia/Shanghai"}))
-}
-
-// 将UTC时间转换为中国时区的日期字符串 (YYYY-MM-DD)
-function formatChinaDate(utcDate: Date) {
-  return new Date(utcDate.toLocaleString("en-US", {timeZone: "Asia/Shanghai"}))
-    .toISOString().split('T')[0]
-}
-
-// 将UTC时间转换为中国时区的年月字符串 (YYYY-MM)
-function formatChinaYearMonth(utcDate: Date) {
-  const chinaDate = new Date(utcDate.toLocaleString("en-US", {timeZone: "Asia/Shanghai"}))
-  const year = chinaDate.getFullYear()
-  const month = String(chinaDate.getMonth() + 1).padStart(2, '0')
-  return `${year}-${month}`
-}
+import {
+  getTimezoneTime,
+  formatTimezoneDate,
+  formatTimezoneYearMonth,
+  getTimezoneMonthRange
+} from '@/lib/timezone-server'
 
 // GET /api/diaries/stats - 获取用户日记统计信息
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // 获取用户时区参数，默认使用浏览器时区
+    const { searchParams } = new URL(request.url)
+    const userTimezone = searchParams.get('timezone') || 'UTC'
 
     // 查找用户
     const user = await prisma.user.findUnique({
@@ -91,11 +77,11 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 按中国时区的月份分组统计
+    // 按用户时区的月份分组统计
     const monthlyStatsMap: { [key: string]: number } = {}
     allDiaries.forEach(diary => {
-      const chinaYearMonth = formatChinaYearMonth(diary.createdAt)
-      monthlyStatsMap[chinaYearMonth] = (monthlyStatsMap[chinaYearMonth] || 0) + 1
+      const userYearMonth = formatTimezoneYearMonth(diary.createdAt, userTimezone)
+      monthlyStatsMap[userYearMonth] = (monthlyStatsMap[userYearMonth] || 0) + 1
     })
 
     // 转换为数组并排序，取最近12个月
@@ -136,7 +122,7 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 20) // 取前20个最常用标签
 
-    // 计算连续写日记天数（基于中国时区）
+    // 计算连续写日记天数（基于用户时区）
     const recentDiaries = await prisma.diary.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
@@ -148,11 +134,11 @@ export async function GET(request: NextRequest) {
 
     let streakDays = 0
     if (recentDiaries.length > 0) {
-      const today = getChinaTime()
+      const today = getTimezoneTime(userTimezone)
       today.setHours(0, 0, 0, 0) // 设为当天00:00:00
 
-      // 将所有日记的创建时间转换为中国时区的日期字符串并排序
-      const dates = recentDiaries.map(d => formatChinaDate(d.createdAt))
+      // 将所有日记的创建时间转换为用户时区的日期字符串并排序
+      const dates = recentDiaries.map(d => formatTimezoneDate(d.createdAt, userTimezone))
       const uniqueDates = [...new Set(dates)].sort((a, b) => b.localeCompare(a)) // 降序排列
 
       if (uniqueDates.length > 0) {
@@ -199,19 +185,13 @@ export async function GET(request: NextRequest) {
 
     const totalWords = allContents.reduce((sum, diary) => sum + diary.content.length, 0)
 
-    // 计算本月字数和数量（基于中国时区）
-    const chinaToday = getChinaTime()
-    const currentYear = chinaToday.getFullYear()
-    const currentMonth = chinaToday.getMonth()
-    
-    // 获取中国时区的本月开始和结束时间
-    const chinaMonthStart = new Date(currentYear, currentMonth, 1)
-    const chinaMonthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999)
-    
-    // 转换为UTC时间用于数据库查询
-    // 中国时间减8小时得到UTC时间
-    const utcMonthStart = new Date(chinaMonthStart.getTime() - 8 * 60 * 60 * 1000)
-    const utcMonthEnd = new Date(chinaMonthEnd.getTime() - 8 * 60 * 60 * 1000)
+    // 计算本月字数和数量（基于用户时区）
+    const userToday = getTimezoneTime(userTimezone)
+    const currentYear = userToday.getFullYear()
+    const currentMonth = userToday.getMonth()
+
+    // 获取用户时区的本月开始和结束时间（UTC格式，用于数据库查询）
+    const { start: utcMonthStart, end: utcMonthEnd } = getTimezoneMonthRange(currentYear, currentMonth, userTimezone)
     
     const currentMonthDiaries = await prisma.diary.findMany({
       where: {
@@ -228,11 +208,11 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 进一步过滤，确保转换到中国时区后确实在当月
+    // 进一步过滤，确保转换到用户时区后确实在当月
     const filteredCurrentMonthDiaries = currentMonthDiaries.filter(diary => {
-      const chinaYearMonth = formatChinaYearMonth(diary.createdAt)
+      const userYearMonth = formatTimezoneYearMonth(diary.createdAt, userTimezone)
       const currentYearMonth = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`
-      return chinaYearMonth === currentYearMonth
+      return userYearMonth === currentYearMonth
     })
 
     const currentMonthWords = filteredCurrentMonthDiaries.reduce((sum, diary) => sum + diary.content.length, 0)

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import TimelineContainer from '@/components/timeline/TimelineContainer'
 import TimelineNavigation from '@/components/timeline/TimelineNavigation'
+import { getCurrentTimezone } from '@/lib/timezone-client'
 
 // 标签类型
 interface Tag {
@@ -152,12 +153,16 @@ export default function TimelinePage() {
     }
   }
 
-  // 获取可用月份列表
+  // 获取可用月份列表（使用用户时区）
   const getAvailableMonths = () => {
     const months = new Set<string>()
+    const userTimezone = getCurrentTimezone()
+
     diaries.forEach(diary => {
+      // 使用时区工具函数进行转换
       const date = new Date(diary.createdAt)
-      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+      const timezoneDate = new Date(date.toLocaleString("en-US", { timeZone: userTimezone }))
+      const yearMonth = `${timezoneDate.getFullYear()}-${String(timezoneDate.getMonth() + 1).padStart(2, '0')}`
       months.add(yearMonth)
     })
     return Array.from(months).sort((a, b) => b.localeCompare(a))
