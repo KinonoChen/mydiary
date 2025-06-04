@@ -27,6 +27,20 @@ export async function GET(request: NextRequest) {
     // 测试浏览器时区检测（仅在客户端有效）
     const browserTimezone = 'N/A (服务端无法检测)'
     
+    // 添加调试信息
+    const debugInfo = {
+      originalIssue: {
+        description: '修复前的问题：getTimezoneTime 返回错误的时间',
+        example: '当获取 Asia/Shanghai 时区的当前时间时，设置 setHours(0,0,0,0) 后会变成前一天'
+      },
+      fixedBehavior: {
+        description: '修复后：使用 Intl.DateTimeFormat 正确解析时区时间',
+        timezoneTimeRaw: timezoneTime.toISOString(),
+        timezoneTimeFormatted: timezoneTime.toLocaleString('zh-CN', { timeZone: testTimezone }),
+        todayInTimezone: formatTimezoneDate(now, testTimezone)
+      }
+    }
+
     return NextResponse.json({
       testTimezone,
       currentTime: {
@@ -46,6 +60,7 @@ export async function GET(request: NextRequest) {
         utcEnd: end.toISOString(),
         explanation: `${testTimezone} 时区的2024年1月对应的UTC时间范围`
       },
+      debugInfo,
       browserTimezone,
       examples: {
         'Asia/Shanghai': '中国标准时间 (UTC+8)',

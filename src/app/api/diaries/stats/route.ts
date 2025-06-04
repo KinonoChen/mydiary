@@ -134,8 +134,18 @@ export async function GET(request: NextRequest) {
 
     let streakDays = 0
     if (recentDiaries.length > 0) {
-      const today = getTimezoneTime(userTimezone)
-      today.setHours(0, 0, 0, 0) // 设为当天00:00:00
+      // 显示时区
+      console.log('userTimezone', userTimezone)
+
+      // 获取用户时区的今天日期字符串
+      const now = new Date()
+      const todayStr = formatTimezoneDate(now, userTimezone)
+      console.log('todayStr', todayStr)
+
+      // 计算昨天的日期字符串
+      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000) // 减去一天
+      const yesterdayStr = formatTimezoneDate(yesterday, userTimezone)
+      console.log('yesterdayStr', yesterdayStr)
 
       // 将所有日记的创建时间转换为用户时区的日期字符串并排序
       const dates = recentDiaries.map(d => formatTimezoneDate(d.createdAt, userTimezone))
@@ -144,24 +154,18 @@ export async function GET(request: NextRequest) {
       if (uniqueDates.length > 0) {
         // 获取最近有日记的日期
         const latestDiaryDate = uniqueDates[0]
-        const latestDate = new Date(latestDiaryDate)
-
-        // 检查最近的日记是否是今天或昨天（允许1天的容错）
-        const todayStr = today.toISOString().split('T')[0]
-        const yesterday = new Date(today)
-        yesterday.setDate(yesterday.getDate() - 1)
-        const yesterdayStr = yesterday.toISOString().split('T')[0]
+        console.log('latestDiaryDate', latestDiaryDate)
 
         // 如果最近的日记不是今天或昨天，连续天数为0
         if (latestDiaryDate !== todayStr && latestDiaryDate !== yesterdayStr) {
           streakDays = 0
         } else {
           // 从最近有日记的日期开始往前计算连续天数
-          let currentCheckDate = new Date(latestDate)
-
+          let currentCheckDate = new Date(latestDiaryDate + 'T12:00:00') // 创建日期对象
           for (const dateStr of uniqueDates) {
-            const checkDateStr = currentCheckDate.toISOString().split('T')[0]
-
+            const checkDateStr = formatTimezoneDate(currentCheckDate, userTimezone)
+            console.log('checkDateStr', checkDateStr)
+            console.log('dateStr', dateStr)
             if (dateStr === checkDateStr) {
               streakDays++
               // 往前推一天

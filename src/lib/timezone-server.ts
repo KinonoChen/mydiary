@@ -8,7 +8,30 @@
  */
 export function getTimezoneTime(timezone: string): Date {
   try {
-    return new Date(new Date().toLocaleString("en-US", { timeZone: timezone }))
+    const now = new Date()
+
+    // 使用 Intl.DateTimeFormat 获取时区时间的各个部分
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+
+    const parts = formatter.formatToParts(now)
+    const year = parseInt(parts.find(part => part.type === 'year')?.value || '0')
+    const month = parseInt(parts.find(part => part.type === 'month')?.value || '1') - 1 // 月份从0开始
+    const day = parseInt(parts.find(part => part.type === 'day')?.value || '1')
+    const hour = parseInt(parts.find(part => part.type === 'hour')?.value || '0')
+    const minute = parseInt(parts.find(part => part.type === 'minute')?.value || '0')
+    const second = parseInt(parts.find(part => part.type === 'second')?.value || '0')
+
+    // 创建时区时间（注意：这里创建的是本地时间，但数值上等于目标时区的时间）
+    return new Date(year, month, day, hour, minute, second, now.getMilliseconds())
   } catch (error) {
     console.warn('无法获取指定时区时间，使用本地时间:', error)
     return new Date()
@@ -20,7 +43,28 @@ export function getTimezoneTime(timezone: string): Date {
  */
 export function convertToTimezone(utcDate: Date, timezone: string): Date {
   try {
-    return new Date(utcDate.toLocaleString("en-US", { timeZone: timezone }))
+    // 使用 Intl.DateTimeFormat 获取时区时间的各个部分
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+
+    const parts = formatter.formatToParts(utcDate)
+    const year = parseInt(parts.find(part => part.type === 'year')?.value || '0')
+    const month = parseInt(parts.find(part => part.type === 'month')?.value || '1') - 1 // 月份从0开始
+    const day = parseInt(parts.find(part => part.type === 'day')?.value || '1')
+    const hour = parseInt(parts.find(part => part.type === 'hour')?.value || '0')
+    const minute = parseInt(parts.find(part => part.type === 'minute')?.value || '0')
+    const second = parseInt(parts.find(part => part.type === 'second')?.value || '0')
+
+    // 创建时区时间
+    return new Date(year, month, day, hour, minute, second, utcDate.getMilliseconds())
   } catch (error) {
     console.warn('无法转换时区，使用原始时间:', error)
     return utcDate
@@ -32,8 +76,14 @@ export function convertToTimezone(utcDate: Date, timezone: string): Date {
  */
 export function formatTimezoneDate(utcDate: Date, timezone: string): string {
   try {
-    return new Date(utcDate.toLocaleString("en-US", { timeZone: timezone }))
-      .toISOString().split('T')[0]
+    // 使用 Intl.DateTimeFormat 来获取正确的时区日期
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    })
+    return formatter.format(utcDate)
   } catch (error) {
     console.warn('无法格式化时区日期，使用UTC日期:', error)
     return utcDate.toISOString().split('T')[0]
@@ -45,9 +95,15 @@ export function formatTimezoneDate(utcDate: Date, timezone: string): string {
  */
 export function formatTimezoneYearMonth(utcDate: Date, timezone: string): string {
   try {
-    const timezoneDate = new Date(utcDate.toLocaleString("en-US", { timeZone: timezone }))
-    const year = timezoneDate.getFullYear()
-    const month = String(timezoneDate.getMonth() + 1).padStart(2, '0')
+    // 使用 Intl.DateTimeFormat 来获取正确的时区年月
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit'
+    })
+    const parts = formatter.formatToParts(utcDate)
+    const year = parts.find(part => part.type === 'year')?.value || ''
+    const month = parts.find(part => part.type === 'month')?.value || ''
     return `${year}-${month}`
   } catch (error) {
     console.warn('无法格式化时区年月，使用UTC年月:', error)
@@ -62,11 +118,16 @@ export function formatTimezoneYearMonth(utcDate: Date, timezone: string): string
  */
 function getTimezoneOffsetMinutes(timezone: string): number {
   try {
-    const date = new Date()
-    const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
-    const targetDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }))
-    
-    return (targetDate.getTime() - utcDate.getTime()) / (1000 * 60)
+    const now = new Date()
+
+    // 获取UTC时间
+    const utcTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000))
+
+    // 获取目标时区时间
+    const targetTime = convertToTimezone(now, timezone)
+
+    // 计算偏移分钟数
+    return (targetTime.getTime() - utcTime.getTime()) / (1000 * 60)
   } catch (error) {
     console.warn('无法计算时区偏移:', error)
     return 0 // 默认UTC
