@@ -85,7 +85,7 @@ export default function TimezoneSettings() {
         </div>
 
         {/* 当前时区显示 */}
-        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+        <div className="p-3 bg-warm-gray dark:bg-gray-700 rounded-md">
           <div className="text-sm text-gray-600 dark:text-gray-400">当前时区：</div>
           <div className="font-medium text-gray-900 dark:text-white">
             {getTimezoneDisplayName(currentTimezone)}

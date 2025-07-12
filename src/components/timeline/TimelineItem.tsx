@@ -39,7 +39,7 @@ export default function TimelineItem({ diary, getTagDisplay, showPreview = false
   }
 
   return (
-    <div className="relative flex items-start group">
+    <div className="relative flex items-start group" data-date={diary.createdAt}>
       {/* 日期数字 */}
       <div className="flex-shrink-0 w-12 text-right mr-4">
         <span className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -59,7 +59,7 @@ export default function TimelineItem({ diary, getTagDisplay, showPreview = false
         className="flex-1 min-w-0 pb-6 cursor-pointer"
         onClick={handleClick}
       >
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow group-hover:border-orange-300 dark:group-hover:border-orange-600">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow group-hover:border-orange-300 dark:group-hover:border-orange-600">
           {/* 标题和统计信息 */}
           <div className="flex items-start justify-between mb-2">
             <h3 className="text-base font-medium text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-2">

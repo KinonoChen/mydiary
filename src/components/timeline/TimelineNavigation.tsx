@@ -43,7 +43,7 @@ export default function TimelineNavigation({
   const years = getAvailableYears()
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 lg:z-20">
+    <div className="bg-warm-gray dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 lg:z-20">
       <div className="px-4 py-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           {/* 左侧：标题和统计 */}
@@ -70,13 +70,13 @@ export default function TimelineNavigation({
               </button>
               
               {isSearchExpanded && (
-                <div className="absolute right-0 top-full mt-1 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
+                <div className="absolute right-0 top-full mt-1 w-64 bg-warm-gray dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
                   <input
                     type="text"
                     placeholder="搜索日记标题或内容..."
                     value={searchQuery}
                     onChange={(e) => onSearch(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     autoFocus
                   />
                 </div>
@@ -88,7 +88,7 @@ export default function TimelineNavigation({
               <select
                 value={currentMonth || ''}
                 onChange={(e) => e.target.value && onMonthSelect(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
               >
                 <option value="">跳转到月份</option>
                 {years.map(year => (

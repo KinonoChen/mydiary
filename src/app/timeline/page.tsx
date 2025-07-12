@@ -171,11 +171,63 @@ export default function TimelinePage() {
   // 跳转到指定月份
   const handleMonthSelect = (month: string) => {
     setCurrentMonth(month)
-    // 滚动到对应月份的位置
-    const monthElement = document.querySelector(`[data-month="${month}"]`)
-    if (monthElement) {
-      monthElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
+
+    // 使用setTimeout确保DOM已更新
+    setTimeout(() => {
+      // 尝试多种选择器来找到月份元素
+      let monthElement = document.querySelector(`[data-month="${month}"]`)
+
+      if (!monthElement) {
+        // 如果没有找到，尝试查找包含该月份的元素
+        const [year, monthNum] = month.split('-')
+        const monthName = new Date(parseInt(year), parseInt(monthNum) - 1).toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: 'long'
+        })
+
+        // 查找包含月份名称的标题元素
+        const headings = document.querySelectorAll('h2, h3, .month-header')
+        for (const heading of headings) {
+          if (heading.textContent?.includes(monthName) || heading.textContent?.includes(month)) {
+            monthElement = heading
+            break
+          }
+        }
+      }
+
+      if (monthElement) {
+        // 滚动到元素位置，留出一些顶部空间给导航栏
+        const navHeight = 80 // 导航栏高度
+        const elementTop = monthElement.getBoundingClientRect().top + window.scrollY - navHeight
+
+        window.scrollTo({
+          top: elementTop,
+          behavior: 'smooth'
+        })
+      } else {
+        // 如果还是找不到，尝试根据日期筛选并滚动到第一个匹配的日记
+        const targetDate = new Date(month + '-01')
+        const diaryElements = document.querySelectorAll('[data-date]')
+
+        for (const element of diaryElements) {
+          const dateStr = element.getAttribute('data-date')
+          if (dateStr) {
+            const diaryDate = new Date(dateStr)
+            if (diaryDate.getFullYear() === targetDate.getFullYear() &&
+                diaryDate.getMonth() === targetDate.getMonth()) {
+              const navHeight = 80
+              const elementTop = element.getBoundingClientRect().top + window.scrollY - navHeight
+
+              window.scrollTo({
+                top: elementTop,
+                behavior: 'smooth'
+              })
+              break
+            }
+          }
+        }
+      }
+    }, 100)
   }
 
   // 加载更多数据
@@ -187,7 +239,7 @@ export default function TimelinePage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen bg-warm-gray dark:bg-gray-900 py-8 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-10">
             <p className="text-gray-600 dark:text-gray-400">请登录后查看此页面</p>
@@ -198,7 +250,7 @@ export default function TimelinePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-warm-gray dark:bg-gray-900">
       {/* 导航栏 */}
       <TimelineNavigation
         availableMonths={getAvailableMonths()}
