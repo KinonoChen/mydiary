@@ -15,7 +15,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20">
+      <div className="relative overflow-hidden bg-warm-gray dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
@@ -79,7 +79,7 @@ export default function HomePage() {
       </div>
 
       {/* Features Section */}
-      <div className="py-20 bg-white dark:bg-gray-800">
+      <div className="py-20 bg-warm-gray dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -113,7 +113,7 @@ export default function HomePage() {
             ].map((feature, index) => (
               <div
                 key={feature.title}
-                className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover-lift transition-all-smooth animate-slide-in-up"
+                className="bg-warm-gray dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover-lift transition-all-smooth animate-slide-in-up"
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
                 <div className="text-5xl mb-6">{feature.icon}</div>

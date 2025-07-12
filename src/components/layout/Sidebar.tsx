@@ -71,13 +71,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar */}
       <div className={`
-        fixed left-0 top-0 h-full w-64 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-r border-gray-200 dark:border-gray-700 transform transition-all duration-300 ease-in-out z-30 shadow-xl
+        fixed left-0 top-0 h-full w-64 bg-warm-gray-95 dark:bg-gray-900/95 backdrop-blur-sm border-r border-gray-200 dark:border-gray-700 transform transition-all duration-300 ease-in-out z-30 shadow-xl
         lg:translate-x-0 lg:static lg:z-0 lg:shadow-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+          <div className="flex items-center px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20">
             <Link href="/" className="flex items-center space-x-3 group">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all-smooth group-hover:scale-105">
                 <span className="text-white font-bold text-xl">📔</span>
@@ -133,7 +133,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* User Profile */}
           {session?.user && (
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20">
+            <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gradient-to-r from-gray-50/50 to-blue-50/50 dark:from-gray-800 dark:to-blue-900/20">
               <div className="flex items-center space-x-3 group cursor-pointer hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-xl p-3 transition-all-smooth">
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center overflow-hidden shadow-md group-hover:shadow-lg transition-all-smooth">
                   {session.user.image ? (

@@ -55,7 +55,7 @@ export default function UXShowcasePage() {
           {activeTab === 'components' && (
             <div className="space-y-8">
               {/* Button Showcase */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover-lift">
+              <div className="bg-warm-gray dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover-lift">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">按钮组件</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-4">
@@ -94,7 +94,7 @@ export default function UXShowcasePage() {
               </div>
 
               {/* Loading Showcase */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover-lift">
+              <div className="bg-warm-gray dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover-lift">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">加载组件</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-6">
@@ -138,7 +138,7 @@ export default function UXShowcasePage() {
               </div>
 
               {/* Avatar Showcase */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover-lift">
+              <div className="bg-warm-gray dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 hover-lift">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">头像组件</h3>
                 <div className="flex items-center gap-6">
                   <Avatar alt="小头像" size="sm" />
@@ -152,7 +152,7 @@ export default function UXShowcasePage() {
 
           {activeTab === 'animations' && (
             <div className="space-y-8">
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="bg-warm-gray dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">动画效果展示</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[
@@ -181,7 +181,7 @@ export default function UXShowcasePage() {
 
           {activeTab === 'interactions' && (
             <div className="space-y-8">
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="bg-warm-gray dark:bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">交互体验展示</h3>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -197,7 +197,7 @@ export default function UXShowcasePage() {
                       <input
                         type="text"
                         placeholder="点击输入框"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus-ring bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus-ring bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
                   </div>

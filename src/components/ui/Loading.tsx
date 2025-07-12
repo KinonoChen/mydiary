@@ -96,7 +96,7 @@ export default function Loading({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+      <div className="fixed inset-0 bg-warm-gray-80 dark:bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
         {content}
       </div>
     )
@@ -134,7 +134,7 @@ export function Skeleton({
 // 卡片骨架屏
 export function CardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 animate-fade-in">
+    <div className="bg-warm-gray dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 animate-fade-in">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <Skeleton className="h-6 w-3/4 mb-2" variant="text" />

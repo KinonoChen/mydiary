@@ -19,14 +19,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
   // 如果是认证页面，返回简单布局
   if (isAuthPage) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-warm-gray dark:bg-gray-900">
         {children}
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all-smooth">
+    <div className="min-h-screen bg-warm-gray dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all-smooth">
       {/* Header */}
       <div className="lg:hidden">
         <Header />
@@ -54,7 +54,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </main>
 
           {/* Footer */}
-          <footer className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 py-6 mt-auto">
+          <footer className="bg-warm-gray-80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 py-6 mt-auto">
             <div className="max-w-7xl mx-auto px-4 lg:px-8">
               <div className="text-center">
                 <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">

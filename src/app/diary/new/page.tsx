@@ -217,7 +217,7 @@ export default function NewDiaryPage() {
       )}
 
       {/* Main Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-warm-gray dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-6 space-y-6">
         {/* Date Picker */}
         <div>
@@ -259,7 +259,7 @@ export default function NewDiaryPage() {
               id="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
             />
             
             {/* 时间显示 */}
@@ -290,7 +290,7 @@ export default function NewDiaryPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="今天发生了什么特别的事情？"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
         </div>
 
@@ -358,7 +358,7 @@ export default function NewDiaryPage() {
             onChange={(e) => setContent(e.target.value)}
             placeholder="今天你想记录什么？可以是发生的事情、内心的感受、学到的东西..."
             rows={12}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
             onKeyDown={handleKeyDown}
           />
           <div className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">

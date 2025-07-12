@@ -36,7 +36,7 @@ export default function DiaryCard({
 
   return (
     <div
-      className="group bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover-lift transition-all-smooth animate-fade-in"
+      className="group bg-warm-gray dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover-lift transition-all-smooth animate-fade-in"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

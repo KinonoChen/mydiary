@@ -9,7 +9,7 @@ export default function SettingsPage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen bg-warm-gray dark:bg-gray-900 py-8 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center py-10">
             <p className="text-gray-600 dark:text-gray-400">请登录后查看此页面</p>
@@ -20,7 +20,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen bg-warm-gray dark:bg-gray-900 py-8 px-4">
       <div className="max-w-3xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">设置</h1>
@@ -33,7 +33,7 @@ export default function SettingsPage() {
         <TimezoneSettings />
 
         {/* 账户信息 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             账户信息
           </h3>

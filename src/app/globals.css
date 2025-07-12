@@ -25,11 +25,11 @@
   --warning-500: #f59e0b;
   --error-500: #ef4444;
 
-  /* 背景和前景 */
-  --background: #ffffff;
+  /* 背景和前景 - 暖灰色风格 */
+  --background: #F4F4F0;
   --foreground: #111827;
-  --surface: #ffffff;
-  --surface-secondary: #f9fafb;
+  --surface: #F4F4F0;
+  --surface-secondary: #F4F4F0;
 
   /* 阴影系统 */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -85,6 +85,21 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* 自定义暖灰色背景 */
+.bg-warm-gray {
+  background-color: #F4F4F0;
+}
+
+.bg-warm-gray-95 {
+  background-color: rgba(244, 244, 240, 0.95);
+}
+
+.bg-warm-gray-80 {
+  background-color: rgba(244, 244, 240, 0.8);
+}
+
+
 
 /* 动画系统 */
 @keyframes fadeIn {

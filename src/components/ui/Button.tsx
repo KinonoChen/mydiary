@@ -44,7 +44,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         'dark:hover:bg-gray-700 dark:focus:bg-gray-700'
       ],
       outline: [
-        'border border-gray-300 bg-white text-gray-700 shadow-sm',
+        'border border-gray-300 bg-warm-gray text-gray-700 shadow-sm',
         'hover:bg-gray-50 hover:border-gray-400',
         'focus:bg-gray-50 focus:border-gray-400',
         'dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300',

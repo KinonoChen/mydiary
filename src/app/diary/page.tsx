@@ -207,7 +207,7 @@ export default function DiaryPage() {
   
   if (!session) {
     return (
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center py-10">
             <p className="text-gray-600 dark:text-gray-400">请登录后查看此页面</p>
@@ -218,7 +218,7 @@ export default function DiaryPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen bg-warm-gray dark:bg-gray-900 py-8 px-4">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">我的日记</h1>
         
@@ -264,7 +264,7 @@ export default function DiaryPage() {
         </div>
 
         {/* 筛选器 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -273,7 +273,7 @@ export default function DiaryPage() {
               <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="newest">最新创建</option>
                 <option value="oldest">最早创建</option>
@@ -287,7 +287,7 @@ export default function DiaryPage() {
               <select 
                 value={selectedTag}
                 onChange={(e) => setSelectedTag(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="">全部标签</option>
                 {isLoadingTags ? (
