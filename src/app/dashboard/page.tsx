@@ -153,7 +153,7 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border-2 border-gray-800/20 dark:border-gray-300/20 hover:border-gray-800/30 dark:hover:border-gray-300/30 transition-all duration-200" style={{borderStyle: 'solid', filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.1))'}}>
           <div className="flex items-center">
             <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
               <span className="text-2xl">📝</span>
@@ -165,7 +165,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border-2 border-gray-800/20 dark:border-gray-300/20 hover:border-gray-800/30 dark:hover:border-gray-300/30 transition-all duration-200" style={{borderStyle: 'solid', filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.1))'}}>
           <div className="flex items-center">
             <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
               <span className="text-2xl">🔥</span>
@@ -177,7 +177,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border-2 border-gray-800/20 dark:border-gray-300/20 hover:border-gray-800/30 dark:hover:border-gray-300/30 transition-all duration-200" style={{borderStyle: 'solid', filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.1))'}}>
           <div className="flex items-center">
             <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
               <span className="text-2xl">🏷️</span>
@@ -189,7 +189,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border-2 border-gray-800/20 dark:border-gray-300/20 hover:border-gray-800/30 dark:hover:border-gray-300/30 transition-all duration-200" style={{borderStyle: 'solid', filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.1))'}}>
           <div className="flex items-center">
             <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
               <span className="text-2xl">📊</span>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Diaries */}
-      <div className="bg-warm-gray dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-warm-gray dark:bg-gray-800 rounded-lg shadow-sm border-2 border-gray-800/20 dark:border-gray-300/20 hover:border-gray-800/30 dark:hover:border-gray-300/30 transition-all duration-200" style={{borderStyle: 'solid', filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.1))'}}>
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             最近的日记
@@ -282,35 +282,35 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border-2 border-gray-800/20 dark:border-gray-300/20 hover:border-gray-800/30 dark:hover:border-gray-300/30 transition-all duration-200" style={{borderStyle: 'solid', filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.1))'}}>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             快速操作
           </h3>
           <div className="space-y-3">
             <button
               onClick={() => router.push('/diary/new')}
-              className="w-full flex items-center justify-start px-4 py-3 bg-warm-gray hover:bg-gray-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-colors cursor-pointer border border-gray-200 dark:border-gray-600"
+              className="w-full flex items-center justify-start px-4 py-3 bg-warm-gray hover:bg-gray-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-colors cursor-pointer border border-gray-800/15 dark:border-gray-300/15 hover:border-gray-800/25 dark:hover:border-gray-300/25"
             >
               <span className="mr-3 text-xl">✍️</span>
               <span className="text-blue-700 dark:text-blue-300 font-medium">写新日记</span>
             </button>
             <button
               onClick={() => router.push('/timeline')}
-              className="w-full flex items-center justify-start px-4 py-3 bg-warm-gray hover:bg-gray-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/30 rounded-lg transition-colors cursor-pointer border border-gray-200 dark:border-gray-600"
+              className="w-full flex items-center justify-start px-4 py-3 bg-warm-gray hover:bg-gray-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/30 rounded-lg transition-colors cursor-pointer border border-gray-800/15 dark:border-gray-300/15 hover:border-gray-800/25 dark:hover:border-gray-300/25"
             >
               <span className="mr-3 text-xl">📅</span>
               <span className="text-orange-700 dark:text-orange-300 font-medium">时间主线</span>
             </button>
             <button
               onClick={() => router.push('/search')}
-              className="w-full flex items-center justify-start px-4 py-3 bg-warm-gray hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer border border-gray-200 dark:border-gray-600"
+              className="w-full flex items-center justify-start px-4 py-3 bg-warm-gray hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer border border-gray-800/15 dark:border-gray-300/15 hover:border-gray-800/25 dark:hover:border-gray-300/25"
             >
               <span className="mr-3 text-xl">🔍</span>
               <span className="text-gray-700 dark:text-gray-300 font-medium">搜索日记</span>
             </button>
             <button
               onClick={() => router.push('/tags')}
-              className="w-full flex items-center justify-start px-4 py-3 bg-warm-gray hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer border border-gray-200 dark:border-gray-600"
+              className="w-full flex items-center justify-start px-4 py-3 bg-warm-gray hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer border border-gray-800/15 dark:border-gray-300/15 hover:border-gray-800/25 dark:hover:border-gray-300/25"
             >
               <span className="mr-3 text-xl">🏷️</span>
               <span className="text-gray-700 dark:text-gray-300 font-medium">管理标签</span>
@@ -318,7 +318,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border-2 border-gray-800/20 dark:border-gray-300/20 hover:border-gray-800/30 dark:hover:border-gray-300/30 transition-all duration-200" style={{borderStyle: 'solid', filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.1))'}}>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             本月统计
           </h3>
