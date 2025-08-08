@@ -266,7 +266,7 @@ export default function DiaryPage() {
   
   if (!session) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+      <div className="min-h-screen bg-warm-gray dark:bg-gray-900 py-8 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center py-10">
             <p className="text-gray-600 dark:text-gray-400">请登录后查看此页面</p>
@@ -373,7 +373,7 @@ export default function DiaryPage() {
             <p className="text-gray-500 dark:text-gray-400">加载中...</p>
           </div>
         ) : diaries.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-warm-gray dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="text-center py-8">
               <span className="text-4xl mb-4 block">📝</span>
               <p className="text-gray-500 dark:text-gray-400 mb-4">还没有日记</p>
