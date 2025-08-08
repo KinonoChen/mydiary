@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import DiaryCard from '@/components/diary/DiaryCard'
@@ -37,6 +37,12 @@ interface PaginationData {
 
 export default function DiaryPage() {
   const { data: session } = useSession()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  // 从URL获取初始页码
+  const initialPage = parseInt(searchParams.get('page') || '1', 10)
+  
   const [diaries, setDiaries] = useState<Diary[]>([])
   // 时间主线视图独立数据与分页
   const [timelineDiaries, setTimelineDiaries] = useState<Diary[]>([])
@@ -45,7 +51,7 @@ export default function DiaryPage() {
   const [isTimelineLoading, setIsTimelineLoading] = useState(false)
   const isTimelineLoadingRef = useRef(false)
   const [pagination, setPagination] = useState<PaginationData>({
-    page: 1,
+    page: initialPage,
     limit: 10,
     total: 0,
     pages: 0
@@ -55,7 +61,6 @@ export default function DiaryPage() {
   const [sortBy, setSortBy] = useState('newest')
   const [selectedTag, setSelectedTag] = useState('')
   const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list')
-  const router = useRouter()
   
   // 用户标签
   const [userTags, setUserTags] = useState<Tag[]>([])
@@ -150,6 +155,19 @@ export default function DiaryPage() {
     }
   }
 
+  // 当筛选条件改变时，重置页码为1
+  useEffect(() => {
+    if (sortBy !== 'newest' || selectedTag !== '') {
+      setPagination(prev => ({ ...prev, page: 1 }))
+      // 清除URL中的页码参数
+      const params = new URLSearchParams(searchParams.toString())
+      if (params.has('page')) {
+        params.delete('page')
+        router.push(`/diary?${params.toString()}`)
+      }
+    }
+  }, [sortBy, selectedTag])
+
   useEffect(() => {
     if (session) {
       // 列表视图下使用分页加载
@@ -197,6 +215,11 @@ export default function DiaryPage() {
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.pages) {
       setPagination(prev => ({ ...prev, page: newPage }))
+      
+      // 更新URL中的页码参数
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('page', newPage.toString())
+      router.push(`/diary?${params.toString()}`)
     }
   }
   // 格式化日期显示
