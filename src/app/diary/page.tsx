@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
@@ -38,6 +38,12 @@ interface PaginationData {
 export default function DiaryPage() {
   const { data: session } = useSession()
   const [diaries, setDiaries] = useState<Diary[]>([])
+  // 时间主线视图独立数据与分页
+  const [timelineDiaries, setTimelineDiaries] = useState<Diary[]>([])
+  const [timelinePage, setTimelinePage] = useState(1)
+  const [timelineHasMore, setTimelineHasMore] = useState(false)
+  const [isTimelineLoading, setIsTimelineLoading] = useState(false)
+  const isTimelineLoadingRef = useRef(false)
   const [pagination, setPagination] = useState<PaginationData>({
     page: 1,
     limit: 10,
@@ -105,11 +111,64 @@ export default function DiaryPage() {
     }
   }
 
+  // 时间主线加载（可追加）
+  const fetchTimelineDiaries = async (page: number, append: boolean = true) => {
+    try {
+      // 防止并发重复加载
+      if (isTimelineLoadingRef.current) return
+      isTimelineLoadingRef.current = true
+      setIsTimelineLoading(true)
+      const response = await fetch(`/api/diaries?page=${page}&limit=10&sortBy=${sortBy}&tag=${selectedTag}`)
+      if (!response.ok) {
+        throw new Error('获取日记列表失败')
+      }
+      const data = await response.json()
+      setTimelineDiaries(prev => {
+        const base = append ? prev : []
+        const merged = [...base, ...data.data]
+        // 去重：按 id 保持最新顺序
+        const seen = new Set<string>()
+        const unique: Diary[] = []
+        for (let i = 0; i < merged.length; i++) {
+          const item = merged[i]
+          if (!seen.has(item.id)) {
+            seen.add(item.id)
+            unique.push(item)
+          }
+        }
+        return unique
+      })
+      const currentPage: number = data.pagination.page
+      const totalPages: number = data.pagination.pages
+      setTimelinePage(currentPage)
+      setTimelineHasMore(currentPage < totalPages)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '获取日记列表失败')
+    } finally {
+      setIsTimelineLoading(false)
+      isTimelineLoadingRef.current = false
+    }
+  }
+
   useEffect(() => {
     if (session) {
-      fetchDiaries(pagination.page)
+      // 列表视图下使用分页加载
+      if (viewMode === 'list') {
+        fetchDiaries(pagination.page)
+      }
     }
-  }, [pagination.page, sortBy, selectedTag, session])
+  }, [pagination.page, sortBy, selectedTag, session, viewMode])
+
+  // 当切换到时间主线或筛选条件变化时，重置并加载第一页
+  useEffect(() => {
+    if (!session) return
+    if (viewMode !== 'timeline') return
+    // 重置
+    setTimelineDiaries([])
+    setTimelinePage(1)
+    setTimelineHasMore(false)
+    fetchTimelineDiaries(1, false)
+  }, [viewMode, sortBy, selectedTag, session])
 
   const handleEdit = (id: string) => {
     router.push(`/diary/edit/${id}`)
@@ -378,10 +437,16 @@ export default function DiaryPage() {
         ) : (
           /* 时间主线视图 */
           <TimelineContainer
-            diaries={diaries}
+            diaries={timelineDiaries}
             getTagDisplay={getTagDisplay}
             showPreview={false}
-            isLoading={isLoading}
+            isLoading={isTimelineLoading}
+            hasMore={timelineHasMore}
+            onLoadMore={() => {
+              if (!isTimelineLoading && timelineHasMore) {
+                fetchTimelineDiaries(timelinePage + 1, true)
+              }
+            }}
           />
         )}
       </div>

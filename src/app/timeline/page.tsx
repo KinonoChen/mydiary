@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import TimelineContainer from '@/components/timeline/TimelineContainer'
@@ -49,6 +49,7 @@ export default function TimelinePage() {
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentMonth, setCurrentMonth] = useState('')
+  const isLoadingRef = useRef(false)
   
   // 用户标签
   const [userTags, setUserTags] = useState<Tag[]>([])
@@ -83,6 +84,9 @@ export default function TimelinePage() {
   // 加载日记数据
   const fetchDiaries = async (page: number = 1, append: boolean = false) => {
     try {
+      // 并发防护，避免重复触发加载
+      if (isLoadingRef.current) return
+      isLoadingRef.current = true
       setIsLoading(true)
       const response = await fetch(`/api/diaries?page=${page}&limit=${pagination.limit}&sortBy=newest`)
       
@@ -92,17 +96,28 @@ export default function TimelinePage() {
 
       const data = await response.json()
       
-      if (append) {
-        setDiaries(prev => [...prev, ...data.data])
-      } else {
-        setDiaries(data.data)
-      }
+      setDiaries(prev => {
+        const base = append ? prev : []
+        const merged = [...base, ...data.data]
+        // 去重：按 id 去重保持顺序
+        const seen = new Set<string>()
+        const unique: Diary[] = []
+        for (let i = 0; i < merged.length; i++) {
+          const item = merged[i]
+          if (!seen.has(item.id)) {
+            seen.add(item.id)
+            unique.push(item)
+          }
+        }
+        return unique
+      })
       
       setPagination(data.pagination)
     } catch (err) {
       setError(err instanceof Error ? err.message : '获取日记列表失败')
     } finally {
       setIsLoading(false)
+      isLoadingRef.current = false
     }
   }
 
@@ -232,7 +247,7 @@ export default function TimelinePage() {
 
   // 加载更多数据
   const handleLoadMore = () => {
-    if (pagination.page < pagination.pages && !isLoading) {
+    if (pagination.page < pagination.pages && !isLoadingRef.current) {
       fetchDiaries(pagination.page + 1, true)
     }
   }
@@ -272,7 +287,7 @@ export default function TimelinePage() {
             diaries={filteredDiaries}
             getTagDisplay={getTagDisplay}
             showPreview={true}
-            isLoading={isLoading && pagination.page === 1}
+            isLoading={isLoading}
             onLoadMore={handleLoadMore}
             hasMore={pagination.page < pagination.pages}
           />
