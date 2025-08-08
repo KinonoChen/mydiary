@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { getLocalDateString, formatDateDisplay } from '@/lib/utils'
@@ -48,6 +48,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const hasInitializedRef = useRef(false)
   
   // 用于存储从数据库加载的标签数据
   const [tagsData, setTagsData] = useState<TagsData>({
@@ -89,11 +90,15 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
   }, [session])
 
   useEffect(() => {
+    // 仅在首次加载且已登录时获取并初始化表单，防止窗口聚焦时重复覆盖用户输入
+    if (!session || hasInitializedRef.current) {
+      return
+    }
+
     const fetchDiary = async () => {
       try {
         setIsLoading(true)
         const response = await fetch(`/api/diaries/${resolvedParams.id}`)
-        
         if (!response.ok) {
           throw new Error('获取日记失败')
         }
@@ -122,6 +127,8 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
         // 设置日期，从createdAt中提取日期部分
         const createdDate = new Date(data.createdAt)
         setSelectedDate(getLocalDateString(createdDate))
+
+        hasInitializedRef.current = true
       } catch (err) {
         setError(err instanceof Error ? err.message : '获取日记失败')
       } finally {
@@ -507,11 +514,6 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Auto-save indicator */}
-      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        💾 自动保存已开启，你的内容不会丢失
       </div>
     </div>
   )
