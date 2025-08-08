@@ -85,7 +85,7 @@ export default function DiaryCard({
           >
             <span className="text-sm font-medium">编辑</span>
             <span className="absolute left-1/2 -translate-x-1/2 -bottom-10 px-2 py-1 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-              编辑这篇日记
+              编辑日记
             </span>
           </button>
           <button
@@ -94,7 +94,7 @@ export default function DiaryCard({
           >
             <span className="text-sm font-medium">删除</span>
             <span className="absolute left-1/2 -translate-x-1/2 -bottom-10 px-2 py-1 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-              删除这篇日记
+              删除日记
             </span>
           </button>
         </div>
