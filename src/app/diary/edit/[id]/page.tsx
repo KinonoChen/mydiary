@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { getLocalDateString, formatDateDisplay } from '@/lib/utils'
@@ -48,6 +48,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const hasInitializedRef = useRef(false)
   
   // 用于存储从数据库加载的标签数据
   const [tagsData, setTagsData] = useState<TagsData>({
@@ -89,11 +90,15 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
   }, [session])
 
   useEffect(() => {
+    // 仅在首次加载且已登录时获取并初始化表单，防止窗口聚焦时重复覆盖用户输入
+    if (!session || hasInitializedRef.current) {
+      return
+    }
+
     const fetchDiary = async () => {
       try {
         setIsLoading(true)
         const response = await fetch(`/api/diaries/${resolvedParams.id}`)
-        
         if (!response.ok) {
           throw new Error('获取日记失败')
         }
@@ -122,6 +127,8 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
         // 设置日期，从createdAt中提取日期部分
         const createdDate = new Date(data.createdAt)
         setSelectedDate(getLocalDateString(createdDate))
+
+        hasInitializedRef.current = true
       } catch (err) {
         setError(err instanceof Error ? err.message : '获取日记失败')
       } finally {
@@ -243,7 +250,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
 
   if (isLoading) {
     return (
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen bg-warm-gray dark:bg-gray-900 py-8 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-center items-center min-h-[300px]">
             <p className="text-gray-500 dark:text-gray-400">加载中...</p>
@@ -312,7 +319,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
         </div>
       )}
         
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-warm-gray dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-6 space-y-6">
           {/* Date Picker */}
           <div>
@@ -354,7 +361,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
                 id="edit-date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
               />
               
               {/* 时间显示 */}
@@ -381,7 +388,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="今天发生了什么特别的事情？"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
 
@@ -449,7 +456,7 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
               onChange={(e) => setContent(e.target.value)}
               placeholder="今天你想记录什么？可以是发生的事情、内心的感受、学到的东西..."
               rows={12}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
               onKeyDown={handleKeyDown}
             />
             <div className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -507,11 +514,6 @@ export default function EditDiaryPage({ params }: { params: Promise<{ id: string
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Auto-save indicator */}
-      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        💾 自动保存已开启，你的内容不会丢失
       </div>
     </div>
   )

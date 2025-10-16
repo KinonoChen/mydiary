@@ -1,4 +1,13 @@
 import { getCurrentTimezone } from './timezone'
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+/**
+ * 合并 Tailwind CSS 类名，避免冲突
+ */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
 /**
  * 格式化日期时间到用户时区
@@ -140,4 +149,60 @@ export function formatDateDisplay(dateStr: string, timezone?: string): string {
       return dateStr
     }
   }
+}
+
+/**
+ * 防抖函数
+ */
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null
+
+  return (...args: Parameters<T>) => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+
+    timeout = setTimeout(() => {
+      func(...args)
+    }, wait)
+  }
+}
+
+/**
+ * 节流函数
+ */
+export function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let lastTime = 0
+
+  return (...args: Parameters<T>) => {
+    const now = Date.now()
+
+    if (now - lastTime >= wait) {
+      lastTime = now
+      func(...args)
+    }
+  }
+}
+
+/**
+ * 生成随机ID
+ */
+export function generateId(): string {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36)
+}
+
+/**
+ * 截断文本
+ */
+export function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) {
+    return text
+  }
+  return text.substring(0, maxLength) + '...'
 }

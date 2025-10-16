@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 interface Diary {
   id: string
@@ -22,18 +23,23 @@ interface DiaryCardProps {
   getTagDisplay: (value: string, type: 'mood' | 'weather' | 'tag') => { text: string, icon?: string }
 }
 
-export default function DiaryCard({ 
-  diary, 
-  onEdit, 
-  onDelete, 
+export default function DiaryCard({
+  diary,
+  onEdit,
+  onDelete,
   formatRelativeTime,
   formatDateTime,
-  getTagDisplay 
+  getTagDisplay
 }: DiaryCardProps) {
   const router = useRouter()
+  const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+    <div
+      className="group bg-warm-gray dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover-lift transition-all-smooth animate-fade-in"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <h3 
@@ -72,23 +78,23 @@ export default function DiaryCard({
             )}
           </div>
         </div>
-        <div className="flex space-x-2">
+        <div className={`flex space-x-2 transition-all-smooth ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'}`}>
           <button
             onClick={onEdit}
-            className="group relative px-2 py-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors cursor-pointer"
+            className="group relative px-3 py-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all-smooth"
           >
-            <span>编辑</span>
-            <span className="absolute left-1/2 -translate-x-1/2 -bottom-8 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              编辑这篇日记
+            <span className="text-sm font-medium">编辑</span>
+            <span className="absolute left-1/2 -translate-x-1/2 -bottom-10 px-2 py-1 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+              编辑日记
             </span>
           </button>
           <button
             onClick={onDelete}
-            className="group relative px-2 py-1 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors cursor-pointer"
+            className="group relative px-3 py-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all-smooth"
           >
-            <span>删除</span>
-            <span className="absolute left-1/2 -translate-x-1/2 -bottom-8 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              删除这篇日记
+            <span className="text-sm font-medium">删除</span>
+            <span className="absolute left-1/2 -translate-x-1/2 -bottom-10 px-2 py-1 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+              删除日记
             </span>
           </button>
         </div>
@@ -100,18 +106,24 @@ export default function DiaryCard({
       
       <div className="flex items-center justify-between">
         <div className="flex flex-wrap gap-2">
-          {diary.tags.map((tag) => (
+          {diary.tags.map((tag, index) => (
             <span
               key={tag}
-              className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300"
+              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:shadow-sm transition-all-smooth animate-fade-in"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
-              {tag}
+              #{tag}
             </span>
           ))}
         </div>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          约 {diary.content.length} 字
-        </span>
+        <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+          <span className="flex items-center gap-1">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            约 {diary.content.length} 字
+          </span>
+        </div>
       </div>
     </div>
   )

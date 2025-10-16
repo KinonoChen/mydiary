@@ -1,15 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
-  COMMON_TIMEZONES, 
-  getCurrentTimezone, 
-  saveUserTimezone, 
-  getAutoDetectTimezone, 
+import {
+  COMMON_TIMEZONES,
+  getCurrentTimezone,
+  saveUserTimezone,
+  getAutoDetectTimezone,
   setAutoDetectTimezone,
   getBrowserTimezone,
   getTimezoneDisplayName
-} from '@/lib/timezone'
+} from '@/lib/timezone-client'
 
 export default function TimezoneSettings() {
   const [currentTimezone, setCurrentTimezone] = useState('')
@@ -54,7 +54,7 @@ export default function TimezoneSettings() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           时区设置
         </h3>
@@ -64,7 +64,7 @@ export default function TimezoneSettings() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+    <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
         时区设置
       </h3>
@@ -85,7 +85,7 @@ export default function TimezoneSettings() {
         </div>
 
         {/* 当前时区显示 */}
-        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+        <div className="p-3 bg-warm-gray dark:bg-gray-700 rounded-md">
           <div className="text-sm text-gray-600 dark:text-gray-400">当前时区：</div>
           <div className="font-medium text-gray-900 dark:text-white">
             {getTimezoneDisplayName(currentTimezone)}
@@ -112,7 +112,7 @@ export default function TimezoneSettings() {
             <select
               value={currentTimezone}
               onChange={(e) => handleTimezoneChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               {COMMON_TIMEZONES.map((tz) => (
                 <option key={tz.value} value={tz.value}>

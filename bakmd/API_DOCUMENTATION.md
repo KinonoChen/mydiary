@@ -140,8 +140,11 @@ DELETE /api/diaries/{id}
 ### 6. 获取统计信息
 
 ```http
-GET /api/diaries/stats
+GET /api/diaries/stats?timezone=Asia/Shanghai
 ```
+
+**查询参数:**
+- `timezone` (可选): 用户时区，默认为 UTC。用于正确计算基于时区的统计数据（如连续天数、月度统计等）
 
 **响应示例:**
 ```json

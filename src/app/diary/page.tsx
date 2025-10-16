@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import DiaryCard from '@/components/diary/DiaryCard'
@@ -37,9 +37,21 @@ interface PaginationData {
 
 export default function DiaryPage() {
   const { data: session } = useSession()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  // 从URL获取初始页码
+  const initialPage = parseInt(searchParams.get('page') || '1', 10)
+  
   const [diaries, setDiaries] = useState<Diary[]>([])
+  // 时间主线视图独立数据与分页
+  const [timelineDiaries, setTimelineDiaries] = useState<Diary[]>([])
+  const [timelinePage, setTimelinePage] = useState(1)
+  const [timelineHasMore, setTimelineHasMore] = useState(false)
+  const [isTimelineLoading, setIsTimelineLoading] = useState(false)
+  const isTimelineLoadingRef = useRef(false)
   const [pagination, setPagination] = useState<PaginationData>({
-    page: 1,
+    page: initialPage,
     limit: 10,
     total: 0,
     pages: 0
@@ -49,7 +61,6 @@ export default function DiaryPage() {
   const [sortBy, setSortBy] = useState('newest')
   const [selectedTag, setSelectedTag] = useState('')
   const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list')
-  const router = useRouter()
   
   // 用户标签
   const [userTags, setUserTags] = useState<Tag[]>([])
@@ -105,11 +116,77 @@ export default function DiaryPage() {
     }
   }
 
+  // 时间主线加载（可追加）
+  const fetchTimelineDiaries = async (page: number, append: boolean = true) => {
+    try {
+      // 防止并发重复加载
+      if (isTimelineLoadingRef.current) return
+      isTimelineLoadingRef.current = true
+      setIsTimelineLoading(true)
+      const response = await fetch(`/api/diaries?page=${page}&limit=10&sortBy=${sortBy}&tag=${selectedTag}`)
+      if (!response.ok) {
+        throw new Error('获取日记列表失败')
+      }
+      const data = await response.json()
+      setTimelineDiaries(prev => {
+        const base = append ? prev : []
+        const merged = [...base, ...data.data]
+        // 去重：按 id 保持最新顺序
+        const seen = new Set<string>()
+        const unique: Diary[] = []
+        for (let i = 0; i < merged.length; i++) {
+          const item = merged[i]
+          if (!seen.has(item.id)) {
+            seen.add(item.id)
+            unique.push(item)
+          }
+        }
+        return unique
+      })
+      const currentPage: number = data.pagination.page
+      const totalPages: number = data.pagination.pages
+      setTimelinePage(currentPage)
+      setTimelineHasMore(currentPage < totalPages)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '获取日记列表失败')
+    } finally {
+      setIsTimelineLoading(false)
+      isTimelineLoadingRef.current = false
+    }
+  }
+
+  // 当筛选条件改变时，重置页码为1
+  useEffect(() => {
+    if (sortBy !== 'newest' || selectedTag !== '') {
+      setPagination(prev => ({ ...prev, page: 1 }))
+      // 清除URL中的页码参数
+      const params = new URLSearchParams(searchParams.toString())
+      if (params.has('page')) {
+        params.delete('page')
+        router.push(`/diary?${params.toString()}`)
+      }
+    }
+  }, [sortBy, selectedTag])
+
   useEffect(() => {
     if (session) {
-      fetchDiaries(pagination.page)
+      // 列表视图下使用分页加载
+      if (viewMode === 'list') {
+        fetchDiaries(pagination.page)
+      }
     }
-  }, [pagination.page, sortBy, selectedTag, session])
+  }, [pagination.page, sortBy, selectedTag, session, viewMode])
+
+  // 当切换到时间主线或筛选条件变化时，重置并加载第一页
+  useEffect(() => {
+    if (!session) return
+    if (viewMode !== 'timeline') return
+    // 重置
+    setTimelineDiaries([])
+    setTimelinePage(1)
+    setTimelineHasMore(false)
+    fetchTimelineDiaries(1, false)
+  }, [viewMode, sortBy, selectedTag, session])
 
   const handleEdit = (id: string) => {
     router.push(`/diary/edit/${id}`)
@@ -138,6 +215,11 @@ export default function DiaryPage() {
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.pages) {
       setPagination(prev => ({ ...prev, page: newPage }))
+      
+      // 更新URL中的页码参数
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('page', newPage.toString())
+      router.push(`/diary?${params.toString()}`)
     }
   }
   // 格式化日期显示
@@ -207,7 +289,7 @@ export default function DiaryPage() {
   
   if (!session) {
     return (
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen bg-warm-gray dark:bg-gray-900 py-8 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center py-10">
             <p className="text-gray-600 dark:text-gray-400">请登录后查看此页面</p>
@@ -218,7 +300,7 @@ export default function DiaryPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen bg-warm-gray dark:bg-gray-900 py-8 px-4">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">我的日记</h1>
         
@@ -264,7 +346,7 @@ export default function DiaryPage() {
         </div>
 
         {/* 筛选器 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div className="bg-warm-gray dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -273,7 +355,7 @@ export default function DiaryPage() {
               <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="newest">最新创建</option>
                 <option value="oldest">最早创建</option>
@@ -287,7 +369,7 @@ export default function DiaryPage() {
               <select 
                 value={selectedTag}
                 onChange={(e) => setSelectedTag(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-warm-gray dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="">全部标签</option>
                 {isLoadingTags ? (
@@ -314,7 +396,7 @@ export default function DiaryPage() {
             <p className="text-gray-500 dark:text-gray-400">加载中...</p>
           </div>
         ) : diaries.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-warm-gray dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="text-center py-8">
               <span className="text-4xl mb-4 block">📝</span>
               <p className="text-gray-500 dark:text-gray-400 mb-4">还没有日记</p>
@@ -378,10 +460,16 @@ export default function DiaryPage() {
         ) : (
           /* 时间主线视图 */
           <TimelineContainer
-            diaries={diaries}
+            diaries={timelineDiaries}
             getTagDisplay={getTagDisplay}
             showPreview={false}
-            isLoading={isLoading}
+            isLoading={isTimelineLoading}
+            hasMore={timelineHasMore}
+            onLoadMore={() => {
+              if (!isTimelineLoading && timelineHasMore) {
+                fetchTimelineDiaries(timelinePage + 1, true)
+              }
+            }}
           />
         )}
       </div>
