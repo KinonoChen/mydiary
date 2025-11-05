@@ -126,17 +126,21 @@ export async function GET(request: NextRequest) {
     const recentDiaries = await prisma.diary.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
-      take: 100, // 取更多数据以确保准确性
+      // 不限制数量，获取所有日记以确保准确计算连续天数
       select: {
         createdAt: true
       }
     })
 
+    // 日期字符串减一天的辅助函数 (YYYY-MM-DD格式)
+    const subtractOneDay = (dateStr: string): string => {
+      const date = new Date(dateStr + 'T12:00:00Z') // 使用UTC中午避免时区问题
+      date.setUTCDate(date.getUTCDate() - 1)
+      return date.toISOString().split('T')[0]
+    }
+
     let streakDays = 0
     if (recentDiaries.length > 0) {
-      // 显示时区
-      console.log('userTimezone', userTimezone)
-
       // 获取用户时区的今天日期字符串
       const now = new Date()
       const todayStr = formatTimezoneDate(now, userTimezone)
@@ -154,24 +158,21 @@ export async function GET(request: NextRequest) {
       if (uniqueDates.length > 0) {
         // 获取最近有日记的日期
         const latestDiaryDate = uniqueDates[0]
-        // console.log('latestDiaryDate', latestDiaryDate)
 
         // 如果最近的日记不是今天或昨天，连续天数为0
         if (latestDiaryDate !== todayStr && latestDiaryDate !== yesterdayStr) {
           streakDays = 0
         } else {
           // 从最近有日记的日期开始往前计算连续天数
-          let currentCheckDate = new Date(latestDiaryDate + 'T12:00:00') // 创建日期对象
+          let expectedDate = latestDiaryDate
+          
           for (const dateStr of uniqueDates) {
-            const checkDateStr = formatTimezoneDate(currentCheckDate, userTimezone)
-            // console.log('checkDateStr', checkDateStr)
-            // console.log('dateStr', dateStr)
-            if (dateStr === checkDateStr) {
+            if (dateStr === expectedDate) {
               streakDays++
-              // 往前推一天
-              currentCheckDate.setDate(currentCheckDate.getDate() - 1)
+              // 期望下一个日期是前一天
+              expectedDate = subtractOneDay(expectedDate)
             } else {
-              // 如果当前检查的日期没有日记，结束连续计算
+              // 日期不连续，结束计算
               break
             }
           }
